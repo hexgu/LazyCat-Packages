@@ -1,0 +1,44 @@
+lzc-sdk-version: '0.1'
+name: qBittorrent libtorrent v1
+package: cloud.lazycat.app.qbittorrent-libtorrentv1
+version: 0.1.0+5.1.2-libtorrentv1
+description: qBittorrent libtorrent v1 版本（防止内存泄漏、PT可用）
+homepage: https://github.com/docker-x/Docker-qBittorrent-Enhanced-Edition
+author: Hexg
+application:
+  subdomain: qbittorrentee
+  background_task: true
+  multi_instance: false
+  gpu_accel: false
+  kvm_accel: false
+  usb_accel: false
+  file_handler:
+    mime:
+      - application/x-magnet
+      - application/x-bittorrent
+    actions:
+      open: /open?file=%u
+  routes:
+    - /=http://qbittorrent-libtorrentv1:8080/
+  public_path:
+    - /
+  ingress:
+    - protocol: tcp
+      port: 37312
+      service: qbittorrentee
+    - protocol: udp
+      port: 37312
+      service: qbittorrentee
+services:
+  qbittorrent-libtorrentv1:
+    image: ghcr.nju.edu.cn/linuxserver/qbittorrent:5.1.2-libtorrentv1
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      - WEBUI_PORT=8080
+      - TORRENTING_PORT=37312
+    binds:
+      - /lzcapp/var/config:/config
+      - /lzcapp/var/downloads:/downloads
+
