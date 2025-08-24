@@ -20,3 +20,5 @@ Thumbs.db
 .npm
 .yarn-integrity
 .pnp.*
+
+.lpk
