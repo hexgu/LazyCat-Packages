@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: MoviePilot
 package: cloud.lazycat.app.moviepilot
-version: 0.1.0+2.7.6
+version: 2.7.6
 description: 媒体库自动化管理
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg

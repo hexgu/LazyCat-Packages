@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: LobeChat 数据库版本
 package: cloud.lazycat.app.lobe-chat-database
-version: 0.1.0+1.114.6
+version: 1.114.6
 application:
   routes:
     - /=http://lobe-chat:8080/ # gitlab是services中的名字，.lzcapp是固定后缀，中间的是上面的package字段
