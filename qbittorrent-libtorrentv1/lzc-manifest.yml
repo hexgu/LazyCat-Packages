@@ -40,5 +40,5 @@ services:
       - TORRENTING_PORT=37312
     binds:
       - /lzcapp/var/config:/config
-      - /lzcapp/var/downloads:/downloads
-
+      - /lzcapp/run/mnt/home/qbittorrent/downloads:/downloads
+      - /lzcapp/run/mnt/home/qbittorrent/BT_backup:/config/BT_backup
