@@ -1,0 +1,56 @@
+lzc-sdk-version: '0.1'
+name: MoviePilot
+package: cloud.lazycat.app.moviepilot
+version: 0.1.0+2.7.6
+description: 媒体库自动化管理
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+application:
+  subdomain: moviepilot
+  background_task: true
+  multi_instance: false
+  gpu_accel: false
+  kvm_accel: false
+  usb_accel: false
+  routes:
+    - /=http://moviepilot:3000/
+services:
+  moviepilot:
+    image: ghcr.nju.edu.cn/jxxghp/moviepilot:2.7.6
+    depends_on:
+      - redis
+      - postgresql
+    environment:
+      - 'NGINX_PORT=3000'
+      - 'PORT=3001'
+      - 'PUID=0'
+      - 'PGID=0'
+      - 'UMASK=000'
+      - 'TZ=Asia/Shanghai'
+      - 'SUPERUSER=admin'
+      - 'DB_TYPE=postgresql'
+      - 'DB_POSTGRESQL_HOST=postgresql.cloud.lazycat.app.moviepilot'
+      - 'DB_POSTGRESQL_PORT=5432'
+      - 'DB_POSTGRESQL_DATABASE=moviepilot'
+      - 'DB_POSTGRESQL_USERNAME=moviepilot'
+      - 'DB_POSTGRESQL_PASSWORD=pg_password'
+      - 'CACHE_BACKEND_TYPE=redis'
+      - 'CACHE_BACKEND_URL=redis://:redis_password@redis.cloud.lazycat.app.moviepilot:6379'
+    binds:
+      - '/lzcapp/run/mnt/home/qbittorrent/downloads:/media'
+      - '/lzcapp/var/config:/config'
+      - '/lzcapp/cache/core:/moviepilot/.cache/ms-playwright'
+      - '/lzcapp/run/mnt/home/qbittorrent/BT_backup:/BT_backup'
+  redis:
+    image: registry.lazycat.cloud/redis
+    binds:
+      - /lzcapp/var/redis/data:/data
+    command: redis-server --save 600 1 --requirepass redis_password
+  postgresql:
+    image: registry.lazycat.cloud/postgresql
+    environment:
+      - POSTGRES_USER=moviepilot
+      - POSTGRES_PASSWORD=pg_password
+      - POSTGRES_DB=moviepilot
+    binds:
+      - /lzcapp/var/postgresql/data:/var/lib/postgresql/data
