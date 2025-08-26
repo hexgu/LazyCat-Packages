@@ -37,7 +37,7 @@ services:
       - 'CACHE_BACKEND_TYPE=redis'
       - 'CACHE_BACKEND_URL=redis://:redis_password@redis.cloud.lazycat.app.moviepilot:6379'
     binds:
-      - '/lzcapp/run/mnt/home/qbittorrent/downloads:/media'
+      - '/lzcapp/run/mnt/home/qbittorrent/downloads:/media/qbittorrent'
       - '/lzcapp/var/config:/config'
       - '/lzcapp/cache/core:/moviepilot/.cache/ms-playwright'
       - '/lzcapp/run/mnt/home/qbittorrent/BT_backup:/BT_backup'
