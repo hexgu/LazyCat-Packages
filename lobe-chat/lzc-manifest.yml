@@ -4,7 +4,7 @@ package: cloud.lazycat.app.lobe-chat-database
 version: 1.114.6
 application:
   routes:
-    - /=http://lobe-chat:8080/ # gitlab是services中的名字，.lzcapp是固定后缀，中间的是上面的package字段
+    - /=http://lobe-chat:8080/
   subdomain: lobe-chat
 service:
   postgresql:
@@ -20,26 +20,60 @@ service:
       - '/lzcapp/var/s3_data:/etc/minio/data'
     environment:
       - 'MINIO_API_CORS_ALLOW_ORIGIN=*'
-      - 'MINIO_ROOT_USER=LAZYCAT'
-      - 'MINIO_ROOT_PASSWORD=LAZYCAT'
+      - 'MINIO_ROOT_USER=admin'
+      - 'MINIO_ROOT_PASSWORD=lobe-chat' # 警告：生产环境请务必修改此密码
+      # 以下变量供 entrypoint 脚本使用
+      - 'MINIO_PORT=9000'
+      - 'MINIO_LOBE_BUCKET=lobe'
+    entrypoint: >
+      /bin/sh -c "
+        minio server /etc/minio/data --address ':${MINIO_PORT}' --console-address ':9001' &
+        MINIO_PID=$$!
+        while ! curl -s http://localhost:${MINIO_PORT}/minio/health/live; do
+          echo 'Waiting for MinIO to start...'
+          sleep 1
+        done
+        sleep 5
+        mc alias set myminio http://localhost:${MINIO_PORT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+        echo 'Creating bucket ${MINIO_LOBE_BUCKET}'
+        mc mb myminio/${MINIO_LOBE_BUCKET}
+        wait $$MINIO_PID
+      "
+  searxng:
+    image: searxng/searxng
+    binds:
+      - '/lzcapp/var/searxng-settings.yml:/etc/searxng/settings.yml'
+    environment:
+      - 'SEARXNG_SETTINGS_FILE=/etc/searxng/settings.yml'
   lobe-chat-database:
     image: lobehub/lobe-chat-database:1.114.6
     environment:
-    # 身份验证
-      - 'NEXT_AUTH_SSO_PROVIDERS=casdoor'
-      - 'NEXT_AUTH_SECRET=NX2kaPE923dt6BL2U8e9oSre5RfoT7hg'
-      - 'NEXT_AUTH_SSO_PROVIDERS=generic-oidc'
-      - 'NEXTAUTH_URL=${LAZYCAT_AUTH_OIDC_AUTH_URI}'
-      - 'AUTH_GENERIC_OIDC_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}'
-      - 'AUTH_GENERIC_OIDC_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}'
-      - 'AUTH_GENERIC_OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}'
-
-      - 'DATABASE_URL=postgresql://postgres:LAZYCAT@postgresql:5432/LAZYCAT'
-      - 'S3_BUCKET=${MINIO_LOBE_BUCKET}'
+      # LobeChat 自身配置
+      - 'APP_URL=http://localhost:3210'
+      - 'LOBE_PORT=3210'
+      # 数据库配置
+      - 'DATABASE_URL=postgresql://postgres:uWNZugjBqixf8dxC@postgresql:5432/lobechat'
+      # 鉴权通用配置
+      - 'NEXT_AUTH_SECRET=NX2kaPE923dt6BL2U8e9oSre5RfoT7hg' # 警告：生产环境请务必修改此值
+      - 'KEY_VAULTS_SECRET=Kix2wcUONd4CX51E/ZPAd36BqM4wzJgKjPtz2sGztqQ=' # 警告：生产环境请务必修改此值
+      - 'AUTH_URL=http://localhost:3210/api/auth'
+      # SSO - 通用 OIDC 配置 (请在 .env 文件或环境变量中提供这些值)
+      - 'NEXT_AUTH_SSO_PROVIDERS=oidc'
+      - 'OIDC_CLIENT_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}'
+      - 'OIDC_CLIENT_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}'
+      - 'OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}'
+      - 'OIDC_AUTHORIZATION_URL=${LAZYCAT_AUTH_OIDC_AUTH_URI}'
+      - 'OIDC_TOKEN_URL=${LAZYCAT_AUTH_OIDC_TOKEN_URI}'
+      - 'OIDC_USERINFO_URL=${LAZYCAT_AUTH_OIDC_USERINFO_URI}'
+      # 文件存储 - S3 (MinIO) 配置
+      - 'S3_ENDPOINT=http://localhost:9000'
+      - 'S3_PUBLIC_DOMAIN=http://localhost:9000'
+      - 'S3_BUCKET=lobe'
+      - 'S3_ACCESS_KEY=admin'
+      - 'S3_ACCESS_KEY_ID=admin'
+      - 'S3_SECRET_ACCESS_KEY=lobe-chat' # 警告：生产环境请务必修改此密码
       - 'S3_ENABLE_PATH_STYLE=1'
-      - 'S3_ACCESS_KEY=${MINIO_ROOT_USER}'
-      - 'S3_ACCESS_KEY_ID=${MINIO_ROOT_USER}'
-      - 'S3_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}'
       - 'LLM_VISION_IMAGE_USE_BASE64=1'
       - 'S3_SET_ACL=0'
+      # 其他
       - 'SEARXNG_URL=http://searxng:8080'
