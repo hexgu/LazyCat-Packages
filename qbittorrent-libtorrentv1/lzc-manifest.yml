@@ -1,5 +1,5 @@
 lzc-sdk-version: '0.1'
-name: qBittorrent libtorrent v1
+name: qBittorrent
 package: cloud.lazycat.app.qbittorrent-libtorrentv1
 version: 5.1.2-libtorrentv1
 description: qBittorrent libtorrent v1 版本（防止内存泄漏、PT可用）
