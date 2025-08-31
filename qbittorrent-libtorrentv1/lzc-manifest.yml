@@ -33,12 +33,12 @@ services:
   qbittorrent-libtorrentv1:
     image: ghcr.nju.edu.cn/linuxserver/qbittorrent:5.1.2-libtorrentv1
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=0
+      - PGID=0
       - TZ=Asia/Shanghai
       - WEBUI_PORT=8080
       - TORRENTING_PORT=37312
     binds:
+      - /lzcapp/run/mnt/home:/data
       - /lzcapp/var/config:/config
-      - /lzcapp/run/mnt/home/qbittorrent/downloads:/downloads
-      - /lzcapp/run/mnt/home/qbittorrent/BT_backup:/config/BT_backup
+      - /lzcapp/var/downloads:/downloads
