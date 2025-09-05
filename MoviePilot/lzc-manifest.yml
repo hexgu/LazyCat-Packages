@@ -16,7 +16,7 @@ application:
     - /=http://movie-pilot:3000/
 services:
   movie-pilot:
-    image: ghcr.nju.edu.cn/jxxghp/moviepilot:2.7.8
+    image: ghcr.nju.edu.cn/jxxghp/moviepilot:2.7.9
     environment:
       - PUID=0
       - PGID=0
