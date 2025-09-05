@@ -39,6 +39,6 @@ services:
       - WEBUI_PORT=8080
       - TORRENTING_PORT=37312
     binds:
-      - /lzcapp/run/mnt/home:/data
+      - /lzcapp/run/mnt/home:/home
       - /lzcapp/var/config:/config
       - /lzcapp/var/downloads:/downloads
