@@ -1,0 +1,30 @@
+lzc-sdk-version: '0.1'
+name: umami-dashboard
+package: cloud.lazycat.app.umami-dashboard
+version: 0.4.0
+description: 一个现代化的 Umami 分析仪表板，提供实时网站流量统计和监控功能。
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+unsupported_platforms:
+  - tvos	
+locales:
+  zh:
+    name: Umami 仪表板
+    description: 一个现代化的 Umami 分析仪表板，提供实时网站流量统计和监控功能。
+  zh_CN:
+    name: Umami 仪表板
+    description: 一个现代化的 Umami 分析仪表板，提供实时网站流量统计和监控功能。
+  en:
+    name: Umami Dashboard
+    description: A modern Umami analytics dashboard providing real-time website traffic statistics and monitoring features.
+  ja:
+    name: Umami ダッシュボード
+    description: リアルタイムのウェブサイトトラフィック統計と監視機能を提供するモダンな Umami 分析ダッシュボード。
+application:
+  background_task: true
+  subdomain: umami-dashboard
+  routes:
+    - /=http://umami-dashboard:3000/
+services:
+  umami-dashboard:
+    image: registry.lazycat.cloud/hexg/songtianlun/umami-dashboard:8fff1a05602e06aa
