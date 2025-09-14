@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: MoviePilot
 package: cloud.lazycat.app.movie-pilot
-version: 0.9.1+2.7.8
+version: 0.9.1+2.8.0
 description: 媒体库自动化管理
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
@@ -16,7 +16,7 @@ application:
     - /=http://movie-pilot:3000/
 services:
   movie-pilot:
-    image: ghcr.nju.edu.cn/jxxghp/moviepilot:2.7.9
+    image: ghcr.nju.edu.cn/jxxghp/moviepilot:2.8.0
     environment:
       - PUID=0
       - PGID=0
