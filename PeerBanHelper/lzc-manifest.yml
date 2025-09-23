@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: PeerBanHelper
 package: cloud.lazycat.app.peerbanhelper
-version: 8.0.12
+version: 9.0.1
 description: BT 反吸血工具 - 自动封禁不受欢迎、吸血和异常的 BT 客户端，并支持自定义规则。支持 qB/qBEE/Deluge/BiglyBT/BitComet
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
@@ -12,7 +12,7 @@ application:
     - /=http://peerbanhelper:9898/
 services:
   peerbanhelper:
-    image: registry.cn-hangzhou.aliyuncs.com/ghostchu/peerbanhelper:v8.0.12
+    image: registry.lazycat.cloud/hexg/ghostchu/peerbanhelper:003befeb0b5be586
     environment:
       - PUID=0
       - PGID=0
