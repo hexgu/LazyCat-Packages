@@ -10,6 +10,8 @@ application:
   subdomain: peerbanhelper
   routes:
     - /=http://peerbanhelper:9898/
+  health_check:
+    test_url: http://peerbanhelper:9898/dashboard
 services:
   peerbanhelper:
     image: registry.lazycat.cloud/hexg/ghostchu/peerbanhelper:003befeb0b5be586
