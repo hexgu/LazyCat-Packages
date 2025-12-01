@@ -4,7 +4,9 @@ node_modules/
 dist/
 build/
 *.log
+
 ms-playwright/
+public/
 
 .env
 .env.local

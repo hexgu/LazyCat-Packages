@@ -14,7 +14,7 @@ application:
     test_url: http://peerbanhelper:9898/dashboard
 services:
   peerbanhelper:
-    image: registry.lazycat.cloud/hexg/ghostchu/peerbanhelper:4a67aa908a8e12cd
+    image: registry.cn-hangzhou.aliyuncs.com/ghostchu/peerbanhelper:v9.0.9
     environment:
       - PUID=0
       - PGID=0
