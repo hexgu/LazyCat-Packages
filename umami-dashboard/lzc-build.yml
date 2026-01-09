@@ -1,2 +1,2 @@
 pkgout: ./ # 输出的lpk包的位置
-icon: ./favicon-32x32.png   # 图标文件的位置
+icon: ./umami-logo.png  # 图标文件的位置

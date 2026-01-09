@@ -1,7 +1,7 @@
 lzc-sdk-version: "0.1"
 name: Certimate V4
 package: cloud.lazycat.app.certimate
-version: 0.4.2
+version: 0.4.4
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
 locales:
@@ -22,6 +22,6 @@ application:
     - /=http://certimate:8090/
 services:
   certimate:
-    image: registry.lazycat.cloud/hexg/certimate/certimate:fe58dc222997282b
+    image: registry.lazycat.cloud/hexg/certimate/certimate:599f60ed22334690 #certimate/certimate
     binds:
       - /lzcapp/var/data:/app/pb_data

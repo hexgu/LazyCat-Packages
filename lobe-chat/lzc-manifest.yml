@@ -1,6 +1,6 @@
 lzc-sdk-version: '0.1'
 name: LobeChat 数据库版本
-package: cloud.lazycat.app.lobe-chat-database
+package: cloud.lazycat.app.lobehub
 version: 1.114.6
 application:
   routes:
