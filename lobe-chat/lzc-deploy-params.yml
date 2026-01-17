@@ -1,0 +1,20 @@
+# lzc-deploy-params.yml - LobeChat 部署参数配置
+
+params:
+  # OpenAI API Key（可选，用户也可以在应用内配置）
+  - id: openai_api_key
+    type: string
+    name: OpenAI API Key
+    description: 您的 OpenAI API Key（可选，也可以在应用内自行配置）
+    optional: true
+    hidden: false
+
+locales:
+  zh:
+    openai_api_key:
+      name: OpenAI API Key
+      description: 您的 OpenAI API Key（可选，也可以在应用内自行配置）
+  en:
+    openai_api_key:
+      name: OpenAI API Key
+      description: Your OpenAI API Key (optional, you can also configure it in the app)

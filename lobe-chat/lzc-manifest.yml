@@ -1,79 +1,119 @@
 lzc-sdk-version: '0.1'
-name: LobeChat 数据库版本
+name: LobeChat
 package: cloud.lazycat.app.lobehub
 version: 1.114.6
+description: LobeChat 是一款开源的高性能聊天机器人框架，支持多种 AI 模型
+author: LobeHub
+homepage: https://lobehub.com
+license: MIT
+
+# ==================== 应用入口配置 ====================
 application:
+  subdomain: lobechat
+  # OIDC 回调路径，启用后系统会自动注入 OIDC 相关环境变量
+  oidc_redirect_path: /api/auth/callback/oidc
+  # HTTP 路由规则
   routes:
-    - /=http://lobe-chat:8080/
-  subdomain: lobe-chat
-service:
+    - /=http://lobe.cloud.lazycat.app.lobehub.lzcapp:3210
+    # MinIO S3 代理路由（用于文件上传/下载）
+    - /s3/=http://minio.cloud.lazycat.app.lobehub.lzcapp:9000/
+
+# ==================== 服务配置 ====================
+services:
+  # -------------------- PostgreSQL 数据库 --------------------
   postgresql:
-    image: registry.lazycat.cloud/pgvector:pg17
+    image: registry.lazycat.cloud/postgres:18.1
     binds:
-      - '/lzcapp/var/postgresql:/var/lib/postgresql'
+      - /lzcapp/var/postgresql:/var/lib/postgresql/data
     environment:
-      - 'POSTGRES_DB=LAZYCAT'
-      - 'POSTGRES_PASSWORD=LAZYCAT'
+      - POSTGRES_DB=lobechat
+      - POSTGRES_PASSWORD={{ stable_secret "pg_password" }}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      start_period: 30s
+
+  # -------------------- Redis 缓存 --------------------
+  redis:
+    image: registry.lazycat.cloud/redis:8.0
+    command: redis-server --save 60 1000 --appendonly yes
+    binds:
+      - /lzcapp/var/redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      start_period: 10s
+
+  # -------------------- MinIO 对象存储 --------------------
   minio:
-    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    # minio/minio:RELEASE.2025-04-22T22-12-26Z
+    image: registry.lazycat.cloud/hexg/minio/minio:42864c379f3e3b17
     binds:
-      - '/lzcapp/var/s3_data:/etc/minio/data'
+      - /lzcapp/var/minio:/data
     environment:
-      - 'MINIO_API_CORS_ALLOW_ORIGIN=*'
-      - 'MINIO_ROOT_USER=admin'
-      - 'MINIO_ROOT_PASSWORD=lobe-chat' # 警告：生产环境请务必修改此密码
-      # 以下变量供 entrypoint 脚本使用
-      - 'MINIO_PORT=9000'
-      - 'MINIO_LOBE_BUCKET=lobe'
+      - MINIO_API_CORS_ALLOW_ORIGIN=*
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD={{ stable_secret "minio_password" }}
     entrypoint: >
       /bin/sh -c "
-        minio server /etc/minio/data --address ':${MINIO_PORT}' --console-address ':9001' &
+        minio server /data --address ':9000' --console-address ':9001' &
         MINIO_PID=$$!
-        while ! curl -s http://localhost:${MINIO_PORT}/minio/health/live; do
+        while ! curl -s http://localhost:9000/minio/health/live; do
           echo 'Waiting for MinIO to start...'
           sleep 1
         done
-        sleep 5
-        mc alias set myminio http://localhost:${MINIO_PORT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
-        echo 'Creating bucket ${MINIO_LOBE_BUCKET}'
-        mc mb myminio/${MINIO_LOBE_BUCKET}
+        sleep 3
+        mc alias set myminio http://localhost:9000 admin {{ stable_secret \"minio_password\" }}
+        mc mb --ignore-existing myminio/lobe
         wait $$MINIO_PID
       "
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      start_period: 30s
+
+  # -------------------- SearXNG 搜索引擎 --------------------
   searxng:
-    image: searxng/searxng
-    binds:
-      - '/lzcapp/var/searxng-settings.yml:/etc/searxng/settings.yml'
+    image: registry.lazycat.cloud/searxng/searxng:latest
     environment:
-      - 'SEARXNG_SETTINGS_FILE=/etc/searxng/settings.yml'
-  lobe-chat-database:
+      - SEARXNG_BASE_URL=https://${LAZYCAT_APP_DOMAIN}/searxng
+
+  # -------------------- LobeChat 主服务 --------------------
+  lobe:
     image: lobehub/lobe-chat-database:1.114.6
+    depends_on:
+      - postgresql
+      - redis
+      - minio
     environment:
-      # LobeChat 自身配置
-      - 'APP_URL=http://localhost:3210'
-      - 'LOBE_PORT=3210'
-      # 数据库配置
-      - 'DATABASE_URL=postgresql://postgres:uWNZugjBqixf8dxC@postgresql:5432/lobechat'
-      # 鉴权通用配置
-      - 'NEXT_AUTH_SECRET=NX2kaPE923dt6BL2U8e9oSre5RfoT7hg' # 警告：生产环境请务必修改此值
-      - 'KEY_VAULTS_SECRET=Kix2wcUONd4CX51E/ZPAd36BqM4wzJgKjPtz2sGztqQ=' # 警告：生产环境请务必修改此值
-      - 'AUTH_URL=http://localhost:3210/api/auth'
-      # SSO - 通用 OIDC 配置 (请在 .env 文件或环境变量中提供这些值)
-      - 'NEXT_AUTH_SSO_PROVIDERS=oidc'
-      - 'OIDC_CLIENT_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}'
-      - 'OIDC_CLIENT_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}'
-      - 'OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}'
-      - 'OIDC_AUTHORIZATION_URL=${LAZYCAT_AUTH_OIDC_AUTH_URI}'
-      - 'OIDC_TOKEN_URL=${LAZYCAT_AUTH_OIDC_TOKEN_URI}'
-      - 'OIDC_USERINFO_URL=${LAZYCAT_AUTH_OIDC_USERINFO_URI}'
-      # 文件存储 - S3 (MinIO) 配置
-      - 'S3_ENDPOINT=http://localhost:9000'
-      - 'S3_PUBLIC_DOMAIN=http://localhost:9000'
-      - 'S3_BUCKET=lobe'
-      - 'S3_ACCESS_KEY=admin'
-      - 'S3_ACCESS_KEY_ID=admin'
-      - 'S3_SECRET_ACCESS_KEY=lobe-chat' # 警告：生产环境请务必修改此密码
-      - 'S3_ENABLE_PATH_STYLE=1'
-      - 'LLM_VISION_IMAGE_USE_BASE64=1'
-      - 'S3_SET_ACL=0'
-      # 其他
-      - 'SEARXNG_URL=http://searxng:8080'
+      # ========== LobeChat 基础配置 ==========
+      - APP_URL=https://${LAZYCAT_APP_DOMAIN}
+      - AUTH_URL=https://${LAZYCAT_APP_DOMAIN}/api/auth
+
+      # ========== 数据库配置 ==========
+      - DATABASE_URL=postgresql://postgres:{{ stable_secret "pg_password" }}@postgresql.cloud.lazycat.app.lobehub.lzcapp:5432/lobechat
+
+      # ========== Redis 配置 ==========
+      - REDIS_URL=redis://redis.cloud.lazycat.app.lobehub.lzcapp:6379
+      - REDIS_PREFIX=lobechat
+      - REDIS_TLS=0
+
+      # ========== 安全密钥配置 ==========
+      - NEXT_AUTH_SECRET={{ stable_secret "nextauth_secret" }}
+      - KEY_VAULTS_SECRET={{ stable_secret "vaults_secret" }}
+
+      # ========== SSO OIDC 配置（使用懒猫微服统一认证）==========
+      - NEXT_AUTH_SSO_PROVIDERS=oidc
+      - AUTH_OIDC_CLIENT_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
+      - AUTH_OIDC_CLIENT_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
+      - AUTH_OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}
+
+      # ========== S3 对象存储配置（MinIO）==========
+      - S3_ENDPOINT=http://minio.cloud.lazycat.app.lobehub.lzcapp:9000
+      - S3_PUBLIC_DOMAIN=https://${LAZYCAT_APP_DOMAIN}/s3
+      - S3_BUCKET=lobe
+      - S3_ACCESS_KEY_ID=admin
+      - S3_SECRET_ACCESS_KEY={{ stable_secret "minio_password" }}
+      - S3_ENABLE_PATH_STYLE=1
+      - S3_SET_ACL=0
+      - LLM_VISION_IMAGE_USE_BASE64=1
+
+      # ========== 搜索引擎配置 ==========
+      - SEARXNG_URL=http://searxng.cloud.lazycat.app.lobehub.lzcapp:8080

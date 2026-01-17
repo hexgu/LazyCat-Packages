@@ -1,2 +1,10 @@
-pkgout: ./ # 输出的lpk包的位置
-icon: ./icon.png   # 图标文件的位置
+# lzc-build.yml - LobeChat 构建配置
+
+# 指定 manifest 文件路径
+manifest: ./lzc-manifest.yml
+
+# lpk 包输出位置
+pkgout: ./
+
+# 应用图标
+icon: ./icon.png
