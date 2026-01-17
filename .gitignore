@@ -25,3 +25,6 @@ Thumbs.db
 .pnp.*
 
 *.lpk
+
+docs/
+spec/
