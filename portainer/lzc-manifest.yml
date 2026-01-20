@@ -1,0 +1,21 @@
+lzc-sdk-version: "0.1"
+name: Portainer
+package: cloud.lazycat.app.portainer
+version: 2.33.3
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+application:
+  oidc_redirect_path: /auth/oidc.callback
+  subdomain: portainer
+  background_task: true
+  multi_instance: false
+  gpu_accel: false
+  public_path:
+    - /
+  routes:
+    - /=http://portainer:9000/
+services:
+  portainer:
+    image: dockerproxy.net/6053537/portainer-ce:latest
+    binds:
+      - /lzcapp/var/data:/data
