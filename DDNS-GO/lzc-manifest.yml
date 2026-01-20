@@ -16,6 +16,7 @@ application:
     - /=http://ddnsgo:9876/
 services:
   ddnsgo:
-    image: ghcr.nju.edu.cn/jeessy2/ddns-go:v6.13.3
+    # ghcr.io/jeessy2/ddns-go
+    image: ghcr.nju.edu.cn/jeessy2/ddns-go:v6.15.0
     binds:
       - /lzcapp/var/ddns-go:/root
