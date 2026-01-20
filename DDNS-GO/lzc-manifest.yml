@@ -1,0 +1,21 @@
+lzc-sdk-version: '0.1'
+name: DDNS-GO
+package: cloud.lazycat.app.ddns-go
+version: 6.13.3
+description: 自动获取公网ip设置dns解析
+homepage: https://github.com/jeessy2/ddns-go
+author: jeessy2
+application:
+  subdomain: ddnsgo
+  background_task: false
+  multi_instance: false
+  gpu_accel: false
+  kvm_accel: false
+  usb_accel: false
+  routes:
+    - /=http://ddnsgo:9876/
+services:
+  ddnsgo:
+    image: ghcr.nju.edu.cn/jeessy2/ddns-go:v6.13.3
+    binds:
+      - /lzcapp/var/ddns-go:/root
