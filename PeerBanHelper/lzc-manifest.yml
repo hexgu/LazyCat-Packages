@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: PeerBanHelper
 package: cloud.lazycat.app.peerbanhelper
-version: 9.2.3
+version: 9.2.5
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
 locales:
@@ -20,7 +20,7 @@ application:
     test_url: http://peerbanhelper:9898/dashboard
 services:
   peerbanhelper:
-    image: registry.cn-hangzhou.aliyuncs.com/ghostchu/peerbanhelper:v9.2.3
+    image: registry.cn-hangzhou.aliyuncs.com/ghostchu/peerbanhelper:v9.2.5
     environment:
       - PUID=0
       - PGID=0
