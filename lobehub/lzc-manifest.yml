@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: LobeHub
 package: cloud.lazycat.app.lobehub
-version: 2.0.0-next.323
+version: 1.143.2
 description: LobeHub 是一款开源的高性能聊天机器人框架，支持多种 AI 模型
 author: LobeHub
 homepage: https://lobehub.com
@@ -79,7 +79,7 @@ services:
   # -------------------- LobeHub 主服务 --------------------
   lobe:
   #image: lobehub/lobehub
-    image: registry.lazycat.cloud/hexg/lobehub/lobehub:201e1d8986791fe9
+    image: registry.lazycat.cloud/hexg/lobehub/lobe-chat-database:fb71cca15f49efcc
     depends_on:
       - postgresql
       - redis
@@ -102,10 +102,11 @@ services:
       - KEY_VAULTS_SECRET={{ stable_secret "vaults_secret" }}
 
       # ========== SSO OIDC 配置（使用懒猫微服统一认证）==========
-      - NEXT_AUTH_SSO_PROVIDERS=oidc
-      - AUTH_OIDC_CLIENT_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
-      - AUTH_OIDC_CLIENT_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
-      - AUTH_OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}
+      - AUTH_SECRET={{ stable_secret "nextauth_secret" }}
+      - AUTH_SSO_PROVIDERS=generic-oidc
+      - AUTH_GENERIC_OIDC_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
+      - AUTH_GENERIC_OIDC_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
+      - AUTH_GENERIC_OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}
 
       # ========== S3 对象存储配置（MinIO）==========
       - S3_ENDPOINT=http://minio.cloud.lazycat.app.lobehub.lzcapp:9000
