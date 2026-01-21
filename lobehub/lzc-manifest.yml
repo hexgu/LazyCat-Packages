@@ -1,15 +1,15 @@
 lzc-sdk-version: '0.1'
-name: LobeChat
+name: LobeHub
 package: cloud.lazycat.app.lobehub
-version: v2.0.0-next.323
-description: LobeChat 是一款开源的高性能聊天机器人框架，支持多种 AI 模型
+version: 2.0.0-next.323
+description: LobeHub 是一款开源的高性能聊天机器人框架，支持多种 AI 模型
 author: LobeHub
 homepage: https://lobehub.com
 license: MIT
 
 # ==================== 应用入口配置 ====================
 application:
-  subdomain: lobechat
+  subdomain: lobehub
   # OIDC 回调路径，启用后系统会自动注入 OIDC 相关环境变量
   oidc_redirect_path: /api/auth/callback/oidc
   # HTTP 路由规则
@@ -22,7 +22,7 @@ application:
 services:
   # -------------------- PostgreSQL 数据库 --------------------
   postgresql:
-    image: registry.lazycat.cloud/postgres:18.1
+    image: registry.lazycat.cloud/hexg/pgvector/pgvector:22d3d958eb148973
     binds:
       - /lzcapp/var/postgresql:/var/lib/postgresql/data
     environment:
@@ -34,7 +34,7 @@ services:
 
   # -------------------- Redis 缓存 --------------------
   redis:
-    image: registry.lazycat.cloud/redis:8.0
+    image: registry.lazycat.cloud/hexg/library/redis:f58bf348bfac3995
     command: redis-server --save 60 1000 --appendonly yes
     binds:
       - /lzcapp/var/redis:/data
@@ -61,7 +61,7 @@ services:
           sleep 1
         done
         sleep 3
-        mc alias set myminio http://localhost:9000 admin {{ stable_secret \"minio_password\" }}
+        mc alias set myminio http://localhost:9000 admin {{ stable_secret "minio_password" }}
         mc mb --ignore-existing myminio/lobe
         wait $$MINIO_PID
       "
@@ -76,15 +76,16 @@ services:
     environment:
       - SEARXNG_BASE_URL=https://${LAZYCAT_APP_DOMAIN}/searxng
 
-  # -------------------- LobeChat 主服务 --------------------
+  # -------------------- LobeHub 主服务 --------------------
   lobe:
+  #image: lobehub/lobehub
     image: registry.lazycat.cloud/hexg/lobehub/lobehub:201e1d8986791fe9
     depends_on:
       - postgresql
       - redis
       - minio
     environment:
-      # ========== LobeChat 基础配置 ==========
+      # ========== LobeHub 基础配置 ==========
       - APP_URL=https://${LAZYCAT_APP_DOMAIN}
       - AUTH_URL=https://${LAZYCAT_APP_DOMAIN}/api/auth
 
