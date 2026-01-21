@@ -1,20 +1,19 @@
 # lzc-deploy-params.yml - LobeChat 部署参数配置
 
 params:
-  # OpenAI API Key（可选，用户也可以在应用内配置）
-  - id: openai_api_key
+  - id: PROXY_URL
     type: string
-    name: OpenAI API Key
-    description: 您的 OpenAI API Key（可选，也可以在应用内自行配置）
+    name: PROXY_URL
+    description: 用于指定连接到外部服务的代理 URL。（示例：http://127.0.0.1:7890 或 socks5://localhost:7891）
     optional: true
     hidden: false
 
 locales:
   zh:
-    openai_api_key:
-      name: OpenAI API Key
-      description: 您的 OpenAI API Key（可选，也可以在应用内自行配置）
+    PROXY_URL:
+      name: PROXY_URL
+      description: 用于指定连接到外部服务的代理 URL。（示例：http://127.0.0.1:7890 或 socks5://localhost:7891）
   en:
-    openai_api_key:
-      name: OpenAI API Key
-      description: Your OpenAI API Key (optional, you can also configure it in the app)
+    PROXY_URL:
+      name: PROXY_URL
+      description: Used to specify the proxy URL for connecting to external services. (Example: http://127.0.0.1:7890 or socks5://localhost:7891)

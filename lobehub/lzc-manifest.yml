@@ -5,7 +5,6 @@ version: 1.143.2
 description: LobeHub 是一款开源的高性能聊天机器人框架，支持多种 AI 模型
 author: LobeHub
 homepage: https://lobehub.com
-license: MIT
 
 # ==================== 应用入口配置 ====================
 application:
