@@ -1,0 +1,35 @@
+lzc-sdk-version: '0.1'
+name: qBitWebUI
+package: cloud.lazycat.app.qbitwebui
+version: 2.3.4
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+locales:
+  zh:
+    name: qBitWebUI
+    description: 用于管理多个 qBittorrent 实例的现代 Web 界面
+  en:
+    name: qBitWebUI
+    description: A modern web interface for managing multiple qBittorrent instances
+application:
+  background_task: true
+  subdomain: qbitwebui
+  routes:
+    - /=http://qbitwebui:3000/
+services:
+  qbitwebui:
+      #image: ghcr.io/maciejonos/qbitwebui:2.34
+    image: registry.lazycat.cloud/hexg/maciejonos/qbitwebui:f0e4c66d47783e79
+    environment:
+      - TZ=Asia/Shanghai
+      - ENCRYPTION_KEY={{ stable_secret "encryption_key" | substr 0 64 }}
+      # Uncomment to disable login (single-user mode)
+      # - DISABLE_AUTH=true
+      # Uncomment to disable registration (creates default admin account)
+      # - DISABLE_REGISTRATION=true
+      # Uncomment to allow HTTPS with self-signed certificates
+      - ALLOW_SELF_SIGNED_CERTS=true
+      # Uncomment to enable file browser
+      # - DOWNLOADS_PATH=/downloads
+    binds:
+      - /lzcapp/var:/data
