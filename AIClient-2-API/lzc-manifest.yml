@@ -1,0 +1,33 @@
+lzc-sdk-version: '0.1'
+name: AIClient-2-API
+package: cloud.lazycat.app.aiclient-2-api
+version: 2.7.9-1
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+locales:
+  zh:
+    name: AIClient-2-API
+    description: 模拟 Gemini CLI、Antigravity、Qwen Code 和 Kiro 客户端请求，兼容 OpenAI API。支持每天数千次 Gemini 模型请求，并提供 Kiro 内置 Claude 模型的免费使用。通过 API 轻松连接任何客户端，让 AI 开发更高效！
+  en:
+    name: AIClient-2-API
+    description: Simulates Gemini CLI, Antigravity, Qwen Code, 和 Kiro client requests, compatible with the OpenAI API. It supports thousands of Gemini model requests per day and offers free use of the built-in Claude model in Kiro. Easily connect to any client via the API, making AI development more efficient!
+application:
+  background_task: true
+  subdomain: aiclient-2-api
+  routes:
+    - /=http://aiclient-2-api:3000/
+  health_check:
+    test_url: http://aiclient-2-api:3000/health
+services:
+  aiclient-2-api:
+    image: registry.lazycat.cloud/hexg/justlikemaki/aiclient-2-api:0252fdc5cf58004f
+    environment:
+      - ARGS=
+    binds:
+      - /lzcapp/var/configs:/app/configs
+    health_check:
+          test: ["CMD", "node", "healthcheck.js"]
+          interval: 30s
+          timeout: 3s
+          start_period: 5s
+          retries: 3
