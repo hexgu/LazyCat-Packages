@@ -1,121 +1,181 @@
-lzc-sdk-version: '0.1'
+lzc-sdk-version: "0.1"
 name: LobeHub
 package: cloud.lazycat.app.lobehub
-version: 1.143.2
-description: LobeHub 是一款开源的高性能聊天机器人框架，支持多种 AI 模型
-author: LobeHub
+version: 2.0.0
 homepage: https://lobehub.com
+author: LobeHub Community
+description: 开源的高性能聊天框架，支持语音合成、多模态、可扩展的插件系统
 
-# ==================== 应用入口配置 ====================
+locales:
+  zh:
+    name: LobeHub
+    description: 开源的高性能聊天框架，支持语音合成、多模态、可扩展的插件系统
+  en:
+    name: LobeHub
+    description: An open-source, high-performance chatbot framework supporting TTS, multimodal, and extensible plugin systems
+
+# ==================== 应用配置 ====================
 application:
   subdomain: lobehub
-  # OIDC 回调路径，启用后系统会自动注入 OIDC 相关环境变量
-  oidc_redirect_path: /api/auth/callback/oidc
-  # HTTP 路由规则
-  routes:
-    - /=http://lobe.cloud.lazycat.app.lobehub.lzcapp:3210
-    # MinIO S3 代理路由（用于文件上传/下载）
-    - /s3/=http://minio.cloud.lazycat.app.lobehub.lzcapp:9000/
+  background_task: true
+  multi_instance: false
+  
+  # OIDC 回调路径 - 触发懒猫系统注入 OIDC 环境变量
+  # 使用 Generic OIDC 回调路径
+  oidc_redirect_path: /api/auth/callback/generic-oidc
+  
+  # 依赖服务健康检查
+  depends_on:
+    - lobehub
 
-# ==================== 服务配置 ====================
+  # HTTP 路由 - 主服务
+  routes:
+    - /=http://lobehub.cloud.lazycat.app.lobehub.lzcapp:3210
+  
+  # 高级路由 - RustFS S3 对外暴露
+  # 访问地址: https://s3-lobehub.<微服域名>
+  # 以及 RustFS Console 对外暴露 (s3-console)
+  upstreams:
+    - location: /
+      domain_prefix: s3
+      backend: http://rustfs.cloud.lazycat.app.lobehub.lzcapp:9000
+      disable_auto_health_checking: true
+    - location: /
+      domain_prefix: s3-console
+      backend: http://rustfs.cloud.lazycat.app.lobehub.lzcapp:9001
+      disable_auto_health_checking: true
+
+# ==================== 服务定义 ====================
 services:
-  # -------------------- PostgreSQL 数据库 --------------------
+  # ==================== PostgreSQL 数据库 ====================
   postgresql:
     image: registry.lazycat.cloud/hexg/pgvector/pgvector:22d3d958eb148973
-    binds:
-      - /lzcapp/var/postgresql:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=lobechat
-      - POSTGRES_PASSWORD={{ stable_secret "pg_password" }}
+      - POSTGRES_PASSWORD=lazycat_lobehub_pg_password
+    binds:
+      - /lzcapp/var/postgresql:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
       start_period: 30s
 
-  # -------------------- Redis 缓存 --------------------
+  # ==================== Redis 缓存 ====================
   redis:
     image: registry.lazycat.cloud/hexg/library/redis:f58bf348bfac3995
     command: redis-server --save 60 1000 --appendonly yes
     binds:
       - /lzcapp/var/redis:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
       start_period: 10s
 
-  # -------------------- MinIO 对象存储 --------------------
-  minio:
-    # minio/minio:RELEASE.2025-04-22T22-12-26Z
-    image: registry.lazycat.cloud/hexg/minio/minio:42864c379f3e3b17
-    binds:
-      - /lzcapp/var/minio:/data
+  # ==================== RustFS S3 对象存储 ====================
+  rustfs:
+    image: registry.lazycat.cloud/hexg/rustfs/rustfs:f2baa7a3f517608f
     environment:
-      - MINIO_API_CORS_ALLOW_ORIGIN=*
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD={{ stable_secret "minio_password" }}
-    entrypoint: >
-      /bin/sh -c "
-        minio server /data --address ':9000' --console-address ':9001' &
-        MINIO_PID=$$!
-        while ! curl -s http://localhost:9000/minio/health/live; do
-          echo 'Waiting for MinIO to start...'
-          sleep 1
-        done
-        sleep 3
-        mc alias set myminio http://localhost:9000 admin {{ stable_secret "minio_password" }}
-        mc mb --ignore-existing myminio/lobe
-        wait $$MINIO_PID
-      "
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_ACCESS_KEY=lzc_rustfs_admin
+      - RUSTFS_SECRET_KEY=lzc_rustfs_secret_key_2024
+    binds:
+      - /lzcapp/var/rustfs:/data
+    # 修复权限问题：rustfs 容器以非 root 用户运行，需要预先修复挂载目录权限
+    setup_script: |
+      #!/bin/sh
+      mkdir -p /data
+      chown -R rustfs:rustfs /data || chmod -R 777 /data
+    command: --access-key lzc_rustfs_admin --secret-key lzc_rustfs_secret_key_2024 /data
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/health >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
       start_period: 30s
 
-  # -------------------- SearXNG 搜索引擎 --------------------
-  searxng:
-    #image: searxng/searxng
-    image: registry.lazycat.cloud/hexg/searxng/searxng:8488f3c4169da12d
-    environment:
-      - SEARXNG_BASE_URL=https://${LAZYCAT_APP_DOMAIN}/searxng
+  # ==================== RustFS Bucket 初始化 ====================
+  rustfs-init:
+    image: registry.lazycat.cloud/hexg/minio/mc:da9f04bad33b1382
+    depends_on:
+      - rustfs
+    entrypoint: /bin/sh
+    command: |
+      -c '
+        set -eux;
+        echo "Initializing RustFS bucket...";
+        mc alias set rustfs "http://rustfs.cloud.lazycat.app.lobehub.lzcapp:9000" "lzc_rustfs_admin" "lzc_rustfs_secret_key_2024";
+        mc mb "rustfs/lobe" --ignore-existing;
+        mc anonymous set download "rustfs/lobe";
+        echo "RustFS bucket initialized successfully";
+      '
 
-  # -------------------- LobeHub 主服务 --------------------
-  lobe:
-  #image: lobehub/lobehub
-    image: registry.lazycat.cloud/hexg/lobehub/lobe-chat-database:fb71cca15f49efcc
+  # ==================== SearXNG 搜索引擎 ====================
+  searxng:
+    image: registry.lazycat.cloud/hexg/searxng/searxng:893ea2878daa50cc
+    binds:
+      - /lzcapp/var/searxng:/etc/searxng
+    environment:
+      - SEARXNG_SETTINGS_FILE=/etc/searxng/settings.yml
+    # 首次启动时复制配置文件
+    setup_script: |
+      #!/bin/sh
+      if [ ! -f /lzcapp/var/searxng/settings.yml ]; then
+        mkdir -p /lzcapp/var/searxng
+        cp /lzcapp/pkg/searxng-settings.yml /lzcapp/var/searxng/settings.yml
+        echo "SearXNG settings initialized"
+      fi
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ==================== LobeHub 主服务 ====================
+  lobehub:
+    image: registry.lazycat.cloud/hexg/lobehub/lobehub:60121ae51c62a0e1
     depends_on:
       - postgresql
       - redis
-      - minio
+      - rustfs
+      - searxng
     environment:
-      # ========== LobeHub 基础配置 ==========
-      - APP_URL=https://${LAZYCAT_APP_DOMAIN}
-      - AUTH_URL=https://${LAZYCAT_APP_DOMAIN}/api/auth
-
-      # ========== 数据库配置 ==========
-      - DATABASE_URL=postgresql://postgres:{{ stable_secret "pg_password" }}@postgresql.cloud.lazycat.app.lobehub.lzcapp:5432/lobechat
-
-      # ========== Redis 配置 ==========
+      # ===== 核心配置 =====
+      - APP_URL=https://lobehub.${LAZYCAT_BOX_DOMAIN}
+      
+      # ===== 认证配置 (使用懒猫 Generic OIDC) =====
+      - AUTH_SSO_PROVIDERS=generic-oidc
+      - AUTH_GENERIC_OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}
+      - AUTH_GENERIC_OIDC_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
+      - AUTH_GENERIC_OIDC_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
+      
+      # ===== 安全密钥 (建议用户后续替换) =====
+      - KEY_VAULTS_SECRET=Kix2wcUONd4CX51E/ZPAd36BqM4wzJgKjPtz2sGztqQ=
+      - AUTH_SECRET=NX2kaPE923dt6BL2U8e9oSre5RfoT7hg
+      
+      # ===== 数据库配置 =====
+      - DATABASE_URL=postgresql://postgres:lazycat_lobehub_pg_password@postgresql.cloud.lazycat.app.lobehub.lzcapp:5432/lobechat
+      
+      # ===== S3 对象存储配置 =====
+      - S3_BUCKET=lobe
+      - S3_ENABLE_PATH_STYLE=1
+      - S3_ACCESS_KEY=lzc_rustfs_admin
+      - S3_ACCESS_KEY_ID=lzc_rustfs_admin
+      - S3_SECRET_ACCESS_KEY=lzc_rustfs_secret_key_2024
+      - S3_ENDPOINT=http://rustfs.cloud.lazycat.app.lobehub.lzcapp:9000
+      # S3_PUBLIC_DOMAIN 使用外部可访问的 S3 二级域名 (s3-lobehub)
+      - S3_PUBLIC_DOMAIN=https://s3-lobehub.${LAZYCAT_BOX_DOMAIN}
+      - LLM_VISION_IMAGE_USE_BASE64=1
+      - S3_SET_ACL=0
+      
+      # ===== 搜索配置 =====
+      - SEARXNG_URL=http://searxng.cloud.lazycat.app.lobehub.lzcapp:8080
+      
+      # ===== Redis 配置 =====
       - REDIS_URL=redis://redis.cloud.lazycat.app.lobehub.lzcapp:6379
       - REDIS_PREFIX=lobechat
       - REDIS_TLS=0
-
-      # ========== 安全密钥配置 ==========
-      - NEXT_AUTH_SECRET={{ stable_secret "nextauth_secret" }}
-      - KEY_VAULTS_SECRET={{ stable_secret "vaults_secret" }}
-
-      # ========== SSO OIDC 配置（使用懒猫微服统一认证）==========
-      - AUTH_SECRET={{ stable_secret "nextauth_secret" }}
-      - AUTH_SSO_PROVIDERS=generic-oidc
-      - AUTH_GENERIC_OIDC_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
-      - AUTH_GENERIC_OIDC_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
-      - AUTH_GENERIC_OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}
-
-      # ========== S3 对象存储配置（MinIO）==========
-      - S3_ENDPOINT=http://minio.cloud.lazycat.app.lobehub.lzcapp:9000
-      - S3_PUBLIC_DOMAIN=https://${LAZYCAT_APP_DOMAIN}/s3
-      - S3_BUCKET=lobe
-      - S3_ACCESS_KEY_ID=admin
-      - S3_SECRET_ACCESS_KEY={{ stable_secret "minio_password" }}
-      - S3_ENABLE_PATH_STYLE=1
-      - S3_SET_ACL=0
-      - LLM_VISION_IMAGE_USE_BASE64=1
-
-      # ========== 搜索引擎配置 ==========
-      - SEARXNG_URL=http://searxng.cloud.lazycat.app.lobehub.lzcapp:8080

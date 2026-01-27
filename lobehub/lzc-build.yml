@@ -1,10 +1,6 @@
-# lzc-build.yml - LobeChat 构建配置
-
-# 指定 manifest 文件路径
-manifest: ./lzc-manifest.yml
-
-# lpk 包输出位置
 pkgout: ./
-
-# 应用图标
 icon: ./icon.png
+manifest: ./lzc-manifest.yml
+extras:
+  - ./searxng-settings.yml
+  - ./bucket.config.json
