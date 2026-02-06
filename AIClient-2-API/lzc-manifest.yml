@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: AIClient-2-API
 package: cloud.lazycat.app.aiclient-2-api
-version: 2.7.9-1
+version: 2.7.9-1.0.2
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
 locales:
@@ -18,6 +18,8 @@ application:
     - /=http://aiclient-2-api:3000/
   health_check:
     test_url: http://aiclient-2-api:3000/health
+  public_path:
+    - /
 services:
   aiclient-2-api:
     image: registry.lazycat.cloud/hexg/justlikemaki/aiclient-2-api:0252fdc5cf58004f
