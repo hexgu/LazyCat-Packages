@@ -1,0 +1,3 @@
+[submodule "lzc-developer-doc"]
+	path = lzc-developer-doc
+	url = https://gitee.com/lazycatcloud/lzc-developer-doc
