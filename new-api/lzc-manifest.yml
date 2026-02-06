@@ -1,7 +1,7 @@
 lzc-sdk-version: '0.1'
 name: New API
 package: cloud.lazycat.app.new-api
-version: 0.10.8-alpha.9
+version: 0.10.8+1.2.2
 description: >-
   AI模型聚合管理中转分发系统，一个应用管理您的所有AI模型，支持将多种大模型转为统一格式调用，支持OpenAI、Claude、Gemini等格式，可供个人或者企业内部管理与分发渠道使用。
 author: Calcium-Ion
@@ -34,6 +34,10 @@ locales:
     description: >-
       次世代大規模モデルゲートウェイとAI資産管理システム。1つのアプリケーションですべてのAIモデルを管理し、OpenAI、Claude、Geminiなどを含む統一されたAPI形式で複数のモデルをサポートします。
 application:
+  public_path:
+    - /
+    - !/console
+    - !/login
   routes:
     - /=http://new-api:3000
   subdomain: new-api
