@@ -1,10 +1,17 @@
 lzc-sdk-version: '0.1'
 name: DDNS-GO
-package: cloud.lazycat.app.ddns-go
-version: 6.13.3
+package: dev.beiyu.ddnsgo
+version: 6.15.0 
 description: 自动获取公网ip设置dns解析
 homepage: https://github.com/jeessy2/ddns-go
 author: jeessy2
+locales:
+  zh:
+    name: DDNS-GO
+    description: 简单易用的DDNS。支持阿里云、腾讯云、Dnspod、Cloudflare、Callback、华为云、百度云、Porkbun、GoDaddy、Namecheap、NameSilo等...
+  en:
+    name: DDNS-GO
+    description: Simple and easy to use DDNS. Support Aliyun, Tencent Cloud, Dnspod, Cloudflare, Callback, Huawei Cloud, Baidu Cloud, Porkbun, GoDaddy, Namecheap, NameSilo...
 application:
   subdomain: ddnsgo
   background_task: false
@@ -17,6 +24,6 @@ application:
 services:
   ddnsgo:
     # ghcr.io/jeessy2/ddns-go
-    image: ghcr.nju.edu.cn/jeessy2/ddns-go:v6.15.0
+    image: registry.lazycat.cloud/hexg/jeessy2/ddns-go:5bc8f90b73ad0415
     binds:
       - /lzcapp/var/ddns-go:/root
