@@ -1,0 +1,87 @@
+lzc-sdk-version: '0.1'
+name: New API
+package: cloud.lazycat.app.new-api
+version: 0.10.8-alpha.9
+description: >-
+  AI模型聚合管理中转分发系统，一个应用管理您的所有AI模型，支持将多种大模型转为统一格式调用，支持OpenAI、Claude、Gemini等格式，可供个人或者企业内部管理与分发渠道使用。
+author: Calcium-Ion
+homepage: https://github.com/QuantumNous/new-api
+license: New-API-License
+locales:
+  zh:
+    name: New API
+    description: >-
+      AI模型聚合管理中转分发系统，一个应用管理您的所有AI模型，支持将多种大模型转为统一格式调用，支持OpenAI、Claude、Gemini等格式，可供个人或者企业内部管理与分发渠道使用。
+  zh_CN:
+    name: New API
+    description: >-
+      AI模型聚合管理中转分发系统，一个应用管理您的所有AI模型，支持将多种大模型转为统一格式调用，支持OpenAI、Claude、Gemini等格式，可供个人或者企业内部管理与分发渠道使用。
+  en:
+    name: New API
+    description: >-
+      Next-generation large model gateway and AI asset management system. Manage
+      all your AI models in one application, supporting multiple models with
+      unified API format including OpenAI, Claude, Gemini, etc.
+  fr:
+    name: New API
+    description: >-
+      Système de passerelle de modèles d'IA de nouvelle génération et de gestion
+      des actifs IA. Gérez tous vos modèles d'IA dans une seule application,
+      prenant en charge plusieurs modèles avec un format d'API unifié incluant
+      OpenAI, Claude, Gemini, etc.
+  ja:
+    name: New API
+    description: >-
+      次世代大規模モデルゲートウェイとAI資産管理システム。1つのアプリケーションですべてのAIモデルを管理し、OpenAI、Claude、Geminiなどを含む統一されたAPI形式で複数のモデルをサポートします。
+application:
+  routes:
+    - /=http://new-api:3000
+  subdomain: new-api
+  health_check:
+    test_url: http://new-api:3000/api/status
+services:
+  new-api:
+    image: registry.lazycat.cloud/hexg/calciumion/new-api:bc2ce40dcafd30a8
+    command: '--log-dir /app/logs'
+    binds:
+      - /lzcapp/var/data:/data
+      - /lzcapp/var/logs:/app/logs
+    environment:
+      - SQL_DSN=postgresql://root:123456@postgres.cloud.lazycat.app.new-api.lzcapp:5432/new-api
+      - REDIS_CONN_STRING=redis://redis.cloud.lazycat.app.new-api.lzcapp:6379
+      - TZ=Asia/Shanghai
+      - ERROR_LOG_ENABLED=true
+      - BATCH_UPDATE_ENABLED=true
+      - FRONTEND_BASE_URL=${LAZYCAT_APP_DOMAIN}
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: registry.lazycat.cloud/hexg/library/redis:09957f31da3c43c7
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: registry.lazycat.cloud/hexg/library/postgres:6cf0e1b09d8b2b1a
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d new-api"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    binds:
+      - /lzcapp/var/pg_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=new-api

@@ -1,0 +1,43 @@
+lzc-sdk-version: 1.4.0
+name: lobe-chat
+package: lobe-chat
+version: 1.143.3
+description: >-
+  现代化设计的开源 ChatGPT/LLMs 聊天应用与开发框架支持语音合成、多模态、可扩展的（function call）插件系统一键免费拥有你自己的
+  ChatGPT/Gemini/Claude/Ollama 应用
+homepage: ''
+author: ''
+locales:
+  zh:
+    name: Lobe Chat
+    description: >-
+      现代化设计的开源 ChatGPT/LLMs 聊天应用与开发框架，支持语音合成、多模态、可扩展的（function
+      call）插件系统，一键免费拥有你自己的 ChatGPT/Gemini/Claude/Ollama 应用
+  zh_CN:
+    name: Lobe Chat
+    description: >-
+      现代化设计的开源 ChatGPT/LLMs 聊天应用与开发框架，支持语音合成、多模态、可扩展的（function
+      call）插件系统，一键免费拥有你自己的 ChatGPT/Gemini/Claude/Ollama 应用
+  en:
+    name: Lobe Chat
+    description: >-
+      Modern open-source ChatGPT/LLMs chat application and development framework
+      with TTS, multimodal, and extensible (function call) plugin system. Get
+      your own ChatGPT/Gemini/Claude/Ollama app with one click
+  ja:
+    name: Lobe Chat
+    description: >-
+      モダンなオープンソース ChatGPT/LLMs チャットアプリケーションと開発フレームワーク。TTS、マルチモーダル、拡張可能な（function
+      call）プラグインシステムをサポート。ワンクリックで独自の ChatGPT/Gemini/Claude/Ollama アプリを入手
+application:
+  subdomain: lobe-chat
+  background_task: false
+  multi_instance: false
+  gpu_accel: false
+  kvm_accel: false
+  usb_accel: false
+  routes:
+    - /=http://lobe-chat.lobe-chat.lzcapp:3210/
+services:
+  lobe-chat:
+    image: registry.lazycat.cloud/hexg/lobehub/lobe-chat:b33aa424fdad9883

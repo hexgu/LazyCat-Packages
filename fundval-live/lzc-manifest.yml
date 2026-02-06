@@ -1,0 +1,56 @@
+package: cloud.lazycat.app.fundval-live
+version: 1.0.14+1.0.8
+name: FundVal Live
+description: 这是一个示例应用描述
+author: Hexg
+homepage: https://github.com/hexgu/LazyCat-Packages
+# 系统最低版本要求
+min_os_version: 1.0.0
+# 用户首次访问提示
+usage: 欢迎使用本应用
+
+# 核心容器配置
+application:
+  # # 基础镜像
+  # image: alpine3.21
+  # 访问子域名
+  subdomain: fundval-live
+  # 自动启动且不休眠
+  background_task: true
+  # 支持多实例部署
+  multi_instance: false
+  # 容器工作目录
+  workdir: /lzcapp
+  # GPU 硬件加速
+  gpu_accel: false
+  # USB 总线挂载
+  usb_accel: false
+  # KVM 虚拟化加速
+  kvm_accel: false
+  # 容器环境变量
+  health_check:
+    test_url: http://fundval-live:21345/
+# # 扩展功能配置
+# ext_config:
+#   # 挂载文档目录
+#   enable_document_access: false
+#   # 挂载媒体目录
+#   enable_media_access: false
+#   # 默认域名前缀
+#   default_prefix_domain: fund
+locales:
+  zh:
+    name: FundVal Live
+    description: 盘中基金实时估值与逻辑审计系统 - 拒绝黑箱，拒绝情绪化叙事。基于透明的持仓穿透 + 实时行情加权计算 + 硬核数学模型，让基金估值回归数学事实。
+  en:
+    name: FundVal Live
+    description: Intraday Fund Real-time Valuation and Logic Auditing System - Reject black boxes and emotional narratives. Based on transparent position penetration + real-time market weighted calculation + hardcore mathematical models, it brings fund valuation back to mathematical facts.
+
+services:
+  fundval-live:
+    #image: ghcr.nju.edu.cn/ye-yu-mo/fundval-live:latest
+    image: registry.lazycat.cloud/hexg/ye-yu-mo/fundval-live:a7cbcfcc6b586540
+    environment:
+      TZ: "Asia/Shanghai"
+    binds:
+      - /lzcapp/var/data:/app/backend/data
