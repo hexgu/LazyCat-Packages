@@ -1,7 +1,6 @@
-lzc-sdk-version: '0.1'
 name: neko-master
 package: cloud.lazycat.app.neko-master
-version: 1.2.3
+version: 1.2.7+1.0.4
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
 locales:
@@ -21,7 +20,8 @@ application:
     test_url: http://neko-master:3000/
 services:
   neko-master:
-    image: ghcr.nju.edu.cn/foru17/neko-master:1.2.3
+    # image: ghcr.nju.edu.cn/foru17/neko-master:latest
+    image: registry.lazycat.cloud/hexg/foru17/neko-master:d0ae220a973ae5b1
     environment:
       - TZ=Asia/Shanghai
       - NODE_ENV=production
