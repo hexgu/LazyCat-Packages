@@ -12,7 +12,7 @@ locales:
     name: qBitWebUI
     description: A modern web interface for managing multiple qBittorrent instances
 application:
-  background_task: true
+  background_task: false
   subdomain: qbitwebui
   routes:
     - /=http://qbitwebui:3000/

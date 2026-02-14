@@ -14,7 +14,7 @@ locales:
     description: Simple and easy to use DDNS. Support Aliyun, Tencent Cloud, Dnspod, Cloudflare, Callback, Huawei Cloud, Baidu Cloud, Porkbun, GoDaddy, Namecheap, NameSilo...
 application:
   subdomain: ddnsgo
-  background_task: false
+  background_task: true
   multi_instance: false
   gpu_accel: false
   kvm_accel: false

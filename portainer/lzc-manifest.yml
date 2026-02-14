@@ -7,7 +7,7 @@ author: Hexg
 application:
   oidc_redirect_path: /auth/oidc.callback
   subdomain: portainer
-  background_task: true
+  background_task: false
   multi_instance: false
   gpu_accel: false
   public_path:
