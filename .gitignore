@@ -1,6 +1,8 @@
 node_modules/
 .yarn/
 
+lzc-developer-doc/
+
 dist/
 build/
 *.log
