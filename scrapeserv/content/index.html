@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScrapeServ - URL to Screenshots API</title>
+    <script src="https://registry.npmmirror.com/vue/latest/files/dist/vue.global.prod.js"></script>
+    <script src="https://registry.npmmirror.com/@tailwindcss/browser/latest/files/dist/index.global.js"></script>
+    <link rel="stylesheet"
+        href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/latest/files/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        code,
+        pre,
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-glow {
+            background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(99, 102, 241, 0.12), transparent);
+        }
+
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in:nth-child(1) {
+            animation-delay: 0.08s;
+        }
+
+        .fade-in:nth-child(2) {
+            animation-delay: 0.16s;
+        }
+
+        .fade-in:nth-child(3) {
+            animation-delay: 0.24s;
+        }
+
+        .fade-in:nth-child(4) {
+            animation-delay: 0.32s;
+        }
+
+        .fade-in:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        .fade-in:nth-child(6) {
+            animation-delay: 0.48s;
+        }
+
+        pre code {
+            display: block;
+            overflow-x: auto;
+            padding: 1.25rem !important;
+        }
+
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .toast-enter-active,
+        .toast-leave-active {
+            transition: all 0.25s ease;
+        }
+
+        .toast-enter-from,
+        .toast-leave-to {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .tk-k {
+            color: #7dd3fc;
+        }
+
+        .tk-s {
+            color: #86efac;
+        }
+
+        .tk-n {
+            color: #fbbf24;
+        }
+
+        .tk-c {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .tk-f {
+            color: #c4b5fd;
+        }
+
+        .tk-u {
+            color: #f0abfc;
+        }
+
+        .tk-cmd {
+            color: #fbbf24;
+        }
+
+        .tk-m {
+            color: #f472b6;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-slate-200 antialiased">
+    <div id="app" v-cloak>
+
+        <!-- Navbar -->
+        <nav class="fixed top-0 inset-x-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
+            <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                        <i class="fas fa-camera-retro text-white text-sm"></i>
+                    </div>
+                    <span class="font-bold text-lg text-white tracking-tight">ScrapeServ</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="hidden md:flex items-center gap-1 mr-3">
+                        <a v-for="nav in navItems" :key="nav.href" :href="nav.href"
+                            class="px-3 py-1.5 text-sm text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/50 transition-all">
+                            {{ nav.label[lang] }}
+                        </a>
+                    </div>
+                    <button @click="toggleLang"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 transition-all">
+                        <i class="fas fa-globe text-indigo-400 text-xs"></i>
+                        <span>{{ lang === 'en' ? '中文' : 'EN' }}</span>
+                    </button>
+                    <a href="https://github.com/goodreasonai/ScrapeServ" target="_blank"
+                        class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
+                        <i class="fab fa-github text-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <section class="relative pt-32 pb-24 hero-glow overflow-hidden">
+            <div class="absolute top-20 left-1/4 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute top-40 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+            <div class="max-w-6xl mx-auto px-6 text-center relative">
+                <div
+                    class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8 fade-in">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+                    <span class="text-emerald-400 text-sm font-medium">{{ t.hero.status }}</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 fade-in">
+                    <span class="text-white">{{ t.hero.titlePre }}</span><br />
+                    <span class="gradient-text">{{ t.hero.titleHighlight }}</span>
+                </h1>
+                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed fade-in">
+                    {{ t.hero.desc }}
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 fade-in">
+                    <a href="#api"
+                        class="group px-7 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-xl font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all flex items-center gap-2">
+                        {{ t.hero.cta }}
+                        <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <a href="https://github.com/goodreasonai/ScrapeServ" target="_blank"
+                        class="px-7 py-3 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl font-semibold text-slate-300 transition-all flex items-center gap-2">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                </div>
+
+                <!-- Terminal Preview -->
+                <div class="mt-16 max-w-3xl mx-auto fade-in">
+                    <div class="rounded-2xl bg-slate-900/80 border border-slate-800/60 shadow-2xl overflow-hidden">
+                        <div class="flex items-center gap-2 px-5 py-3 bg-slate-900 border-b border-slate-800/60">
+                            <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+                            <span class="ml-4 text-xs text-slate-500 font-mono">terminal</span>
+                        </div>
+                        <pre class="text-left text-sm leading-relaxed"><code><span class="tk-c"># {{ t.hero.termComment }}</span>
+<span class="tk-cmd">curl</span> <span class="tk-f">-X POST</span> <span class="tk-u">"{{ baseUrl }}/scrape"</span> \
+  <span class="tk-f">-H</span> <span class="tk-s">"Content-Type: application/json"</span> \
+  <span class="tk-f">-d</span> <span class="tk-s">'{"url": "https://example.com"}'</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Highlights -->
+        <section id="highlights" class="py-24">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">{{ t.highlights.title }}</h2>
+                    <p class="text-slate-400 text-lg max-w-xl mx-auto">{{ t.highlights.desc }}</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div v-for="(feat, i) in t.highlights.items" :key="i"
+                        class="group p-6 rounded-2xl bg-slate-900/50 border border-slate-800/50 card-hover fade-in">
+                        <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-4" :class="hlColors[i]">
+                            <i :class="hlIcons[i]" class="text-lg"></i>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">{{ feat.title }}</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">{{ feat.desc }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Reference -->
+        <section id="api" class="py-24 bg-slate-900/30">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">{{ t.api.title }}</h2>
+                    <p class="text-slate-400 text-lg">{{ t.api.desc }}</p>
+                </div>
+                <div class="max-w-4xl mx-auto space-y-8">
+
+                    <!-- GET / -->
+                    <div class="rounded-2xl bg-slate-900/50 border border-slate-800/50 overflow-hidden fade-in">
+                        <div class="flex items-center gap-3 px-6 py-4 border-b border-slate-800/40">
+                            <span
+                                class="px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-400 text-xs font-bold font-mono tracking-wider">GET</span>
+                            <code class="text-white font-mono text-sm">/</code>
+                            <span class="text-slate-500 text-sm ml-2">{{ t.api.rootDesc }}</span>
+                        </div>
+                        <div class="px-6 py-4">
+                            <p class="text-slate-400 text-sm">{{ t.api.rootDetail }}</p>
+                        </div>
+                    </div>
+
+                    <!-- POST /scrape -->
+                    <div class="rounded-2xl bg-slate-900/50 border border-slate-800/50 overflow-hidden fade-in">
+                        <div class="flex items-center gap-3 px-6 py-4 border-b border-slate-800/40">
+                            <span
+                                class="px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-400 text-xs font-bold font-mono tracking-wider">POST</span>
+                            <code class="text-white font-mono text-sm">/scrape</code>
+                            <span class="text-slate-500 text-sm ml-2">{{ t.api.scrapeDesc }}</span>
+                        </div>
+                        <div class="px-6 py-4 space-y-8">
+
+                            <!-- Request Body -->
+                            <div>
+                                <h4
+                                    class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i class="fas fa-arrow-up text-indigo-400 text-xs"></i>{{ t.api.requestBody }}
+                                </h4>
+                                <div class="rounded-xl bg-slate-950/60 border border-slate-800/40 overflow-hidden">
+                                    <div
+                                        class="flex items-center justify-between px-4 py-2 bg-slate-900/50 border-b border-slate-800/30">
+                                        <span class="text-xs text-slate-500 font-mono">application/json</span>
+                                        <button @click="copyText(requestExample)"
+                                            class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 cursor-pointer">
+                                            <i class="far fa-copy"></i> {{ t.common.copy }}
+                                        </button>
+                                    </div>
+                                    <pre class="text-sm"><code>{
+  <span class="tk-k">"url"</span>: <span class="tk-s">"https://example.com"</span>,
+  <span class="tk-k">"browser_dim"</span>: <span class="tk-s">[1280, 2000]</span>,
+  <span class="tk-k">"wait"</span>: <span class="tk-n">1000</span>,
+  <span class="tk-k">"max_screenshots"</span>: <span class="tk-n">5</span>
+}</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Parameters Table -->
+                            <div>
+                                <h4
+                                    class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i class="fas fa-sliders-h text-indigo-400 text-xs"></i>{{ t.api.params }}
+                                </h4>
+                                <div class="space-y-2">
+                                    <div v-for="param in t.api.paramList" :key="param.name"
+                                        class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/30">
+                                        <div class="flex items-center gap-2 sm:w-56 flex-shrink-0">
+                                            <code class="text-indigo-300 font-mono text-sm">{{ param.name }}</code>
+                                            <span v-if="param.required"
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-400 uppercase">{{
+                                                t.api.required }}</span>
+                                            <span v-else
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-700/50 text-slate-500 uppercase">{{
+                                                t.api.optional }}</span>
+                                        </div>
+                                        <div class="text-sm text-slate-400">
+                                            <span class="text-slate-600 font-mono text-xs mr-2">{{ param.type }}</span>
+                                            {{ param.desc }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accept Header -->
+                            <div>
+                                <h4
+                                    class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i class="fas fa-image text-purple-400 text-xs"></i>{{ t.api.imageFormats }}
+                                </h4>
+                                <p class="text-slate-500 text-sm mb-3">{{ t.api.imageFormatsNote }}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span v-for="fmt in ['image/jpeg', 'image/png', 'image/webp']" :key="fmt"
+                                        class="px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/40 text-sm font-mono text-slate-300">
+                                        {{ fmt }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Auth -->
+                            <div>
+                                <h4
+                                    class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i class="fas fa-key text-amber-400 text-xs"></i>{{ t.api.auth }}
+                                </h4>
+                                <div class="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/30">
+                                    <p class="text-slate-400 text-sm mb-3">{{ t.api.authDesc }}</p>
+                                    <div class="rounded-lg bg-slate-900/60 px-4 py-2.5 border border-slate-800/30">
+                                        <code
+                                            class="text-sm"><span class="tk-k">Authorization</span>: <span class="tk-s">Bearer</span> <span class="tk-m">&lt;your-api-key&gt;</span></code>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Response -->
+                            <div>
+                                <h4
+                                    class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i class="fas fa-arrow-down text-emerald-400 text-xs"></i>{{ t.api.response }}
+                                </h4>
+                                <div class="space-y-3">
+                                    <div class="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <span
+                                                class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/15 text-emerald-400">200</span>
+                                            <code class="text-sm text-slate-400 font-mono">multipart/mixed</code>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div v-for="(part, i) in t.api.respParts" :key="i"
+                                                class="flex items-start gap-3 text-sm">
+                                                <span
+                                                    class="flex-shrink-0 w-6 h-6 rounded-md bg-slate-800/60 flex items-center justify-center text-xs font-bold text-slate-400">{{
+                                                    i + 1 }}</span>
+                                                <div>
+                                                    <code class="text-slate-300 text-xs">{{ part.type }}</code>
+                                                    <p class="text-slate-500 mt-0.5">{{ part.desc }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 rounded-xl bg-red-500/5 border border-red-500/15">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span
+                                                class="px-2 py-0.5 rounded text-xs font-bold bg-red-500/15 text-red-400">Error</span>
+                                            <code class="text-sm text-slate-400 font-mono">application/json</code>
+                                        </div>
+                                        <p class="text-sm text-slate-500 mt-1">{{ t.api.respErr }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Examples -->
+        <section id="examples" class="py-24">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">{{ t.examples.title }}</h2>
+                    <p class="text-slate-400 text-lg">{{ t.examples.desc }}</p>
+                </div>
+                <div class="max-w-3xl mx-auto space-y-8">
+
+                    <!-- cURL -->
+                    <div class="fade-in">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                                <i class="fas fa-terminal text-amber-400 text-sm"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">cURL</h3>
+                        </div>
+                        <div class="rounded-2xl bg-slate-900/80 border border-slate-800/60 overflow-hidden">
+                            <div
+                                class="flex items-center justify-between px-5 py-2.5 bg-slate-900 border-b border-slate-800/50">
+                                <span class="text-xs text-slate-500 font-mono">terminal</span>
+                                <button @click="copyText(curlExample)"
+                                    class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 cursor-pointer">
+                                    <i class="far fa-copy"></i> {{ t.common.copy }}
+                                </button>
+                            </div>
+                            <pre class="text-sm leading-relaxed"><code><span class="tk-cmd">curl</span> <span class="tk-f">-i -s -X POST</span> <span class="tk-u">"{{ baseUrl }}/scrape"</span> \
+  <span class="tk-f">-H</span> <span class="tk-s">"Content-Type: application/json"</span> \
+  <span class="tk-f">-H</span> <span class="tk-s">"Authorization: Bearer YOUR_API_KEY"</span> \
+  <span class="tk-f">-d</span> <span class="tk-s">'{
+    "url": "https://goodreason.ai",
+    "max_screenshots": 3,
+    "wait": 1500
+  }'</span></code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Python -->
+                    <div class="fade-in">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-9 h-9 rounded-xl bg-sky-500/10 flex items-center justify-center">
+                                <i class="fab fa-python text-sky-400 text-sm"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">Python</h3>
+                        </div>
+                        <div class="rounded-2xl bg-slate-900/80 border border-slate-800/60 overflow-hidden">
+                            <div
+                                class="flex items-center justify-between px-5 py-2.5 bg-slate-900 border-b border-slate-800/50">
+                                <span class="text-xs text-slate-500 font-mono">example.py</span>
+                                <button @click="copyText(pythonExample)"
+                                    class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 cursor-pointer">
+                                    <i class="far fa-copy"></i> {{ t.common.copy }}
+                                </button>
+                            </div>
+                            <pre
+                                class="text-sm leading-relaxed"><code><span class="tk-f">import</span> <span class="tk-k">requests</span>
+
+response = <span class="tk-k">requests</span>.<span class="tk-cmd">post</span>(
+    <span class="tk-s">"{{ baseUrl }}/scrape"</span>,
+    <span class="tk-k">json</span>={<span class="tk-s">"url"</span>: <span class="tk-s">"https://goodreason.ai"</span>},
+    <span class="tk-k">headers</span>={
+        <span class="tk-s">"Accept"</span>: <span class="tk-s">"image/webp"</span>,
+        <span class="tk-s">"Authorization"</span>: <span class="tk-s">"Bearer YOUR_API_KEY"</span>
+    }
+)
+
+<span class="tk-c"># {{ t.examples.pythonComment }}</span>
+<span class="tk-f">print</span>(response.<span class="tk-k">status_code</span>)
+<span class="tk-f">print</span>(response.<span class="tk-k">headers</span>[<span class="tk-s">"Content-Type"</span>])</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- JavaScript -->
+                    <div class="fade-in">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-9 h-9 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+                                <i class="fab fa-js text-yellow-400 text-sm"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">JavaScript (fetch)</h3>
+                        </div>
+                        <div class="rounded-2xl bg-slate-900/80 border border-slate-800/60 overflow-hidden">
+                            <div
+                                class="flex items-center justify-between px-5 py-2.5 bg-slate-900 border-b border-slate-800/50">
+                                <span class="text-xs text-slate-500 font-mono">example.js</span>
+                                <button @click="copyText(jsExample)"
+                                    class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 cursor-pointer">
+                                    <i class="far fa-copy"></i> {{ t.common.copy }}
+                                </button>
+                            </div>
+                            <pre
+                                class="text-sm leading-relaxed"><code><span class="tk-f">const</span> response = <span class="tk-f">await</span> <span class="tk-cmd">fetch</span>(<span class="tk-s">"{{ baseUrl }}/scrape"</span>, {
+  <span class="tk-k">method</span>: <span class="tk-s">"POST"</span>,
+  <span class="tk-k">headers</span>: {
+    <span class="tk-s">"Content-Type"</span>: <span class="tk-s">"application/json"</span>,
+    <span class="tk-s">"Accept"</span>: <span class="tk-s">"image/png"</span>,
+    <span class="tk-s">"Authorization"</span>: <span class="tk-s">"Bearer YOUR_API_KEY"</span>
+  },
+  <span class="tk-k">body</span>: <span class="tk-k">JSON</span>.<span class="tk-cmd">stringify</span>({
+    <span class="tk-k">url</span>: <span class="tk-s">"https://goodreason.ai"</span>,
+    <span class="tk-k">max_screenshots</span>: <span class="tk-n">5</span>,
+    <span class="tk-k">wait</span>: <span class="tk-n">2000</span>,
+    <span class="tk-k">browser_dim</span>: [<span class="tk-n">1440</span>, <span class="tk-n">2400</span>]
+  })
+});
+
+<span class="tk-c">// {{ t.examples.jsComment }}</span>
+<span class="tk-f">const</span> contentType = response.<span class="tk-k">headers</span>.<span class="tk-cmd">get</span>(<span class="tk-s">"Content-Type"</span>);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuration defaults -->
+        <section id="config" class="py-24 bg-slate-900/30">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">{{ t.config.title }}</h2>
+                    <p class="text-slate-400 text-lg max-w-xl mx-auto">{{ t.config.desc }}</p>
+                </div>
+                <div class="max-w-3xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div v-for="(item, i) in t.config.items" :key="i"
+                        class="p-4 rounded-xl bg-slate-900/50 border border-slate-800/50 fade-in">
+                        <div class="flex items-center justify-between mb-2">
+                            <code class="text-indigo-300 font-mono text-xs">{{ item.key }}</code>
+                        </div>
+                        <div class="text-2xl font-bold text-white mb-1">{{ item.value }}</div>
+                        <p class="text-slate-500 text-xs">{{ item.label }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-12 border-t border-slate-800/50">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                            <i class="fas fa-camera-retro text-white text-xs"></i>
+                        </div>
+                        <span class="font-bold text-white">ScrapeServ</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1.5 text-sm text-slate-500">
+                        <p>
+                            {{ t.footer.apiBy }}
+                            <a href="https://github.com/goodreasonai/ScrapeServ" target="_blank"
+                                class="text-indigo-400 hover:text-indigo-300 transition-colors">goodreasonai/ScrapeServ</a>
+                        </p>
+                        <p>
+                            {{ t.footer.pageBy }}
+                            <a href="https://github.com/hexgu/" target="_blank"
+                                class="text-indigo-400 hover:text-indigo-300 transition-colors">{{ t.footer.pageAuthor
+                                }}</a>
+                        </p>
+                    </div>
+                    <a href="https://github.com/goodreasonai/ScrapeServ" target="_blank"
+                        class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Toast -->
+        <transition name="toast">
+            <div v-if="showToast"
+                class="fixed bottom-6 right-6 px-4 py-2.5 bg-emerald-500/90 text-white text-sm font-medium rounded-xl shadow-lg backdrop-blur-sm flex items-center gap-2 z-50">
+                <i class="fas fa-check"></i> {{ t.common.copied }}
+            </div>
+        </transition>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                // 根据浏览器语言自动判断，非中文环境则使用英文，默认中文
+                const browserLang = (navigator.language || navigator.userLanguage || 'zh').toLowerCase();
+                const initialLang = browserLang.startsWith('zh') ? 'zh' : 'en';
+                const lang = ref(initialLang);
+                const showToast = ref(false);
+
+                // 初始化时设置 html lang 属性
+                document.documentElement.lang = lang.value === 'zh' ? 'zh-CN' : 'en';
+
+                const toggleLang = () => {
+                    lang.value = lang.value === 'en' ? 'zh' : 'en';
+                    document.documentElement.lang = lang.value === 'zh' ? 'zh-CN' : 'en';
+                };
+
+                const baseUrl = window.location.origin;
+
+                const copyText = (text) => {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast.value = true;
+                        setTimeout(() => { showToast.value = false; }, 2000);
+                    });
+                };
+
+                const requestExample = `{
+  "url": "https://example.com",
+  "browser_dim": [1280, 2000],
+  "wait": 1000,
+  "max_screenshots": 5
+}`;
+
+                const curlExample = `curl -i -s -X POST "${baseUrl}/scrape" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -d '{
+    "url": "https://goodreason.ai",
+    "max_screenshots": 3,
+    "wait": 1500
+  }'`;
+
+                const pythonExample = `import requests
+
+response = requests.post(
+    "${baseUrl}/scrape",
+    json={"url": "https://goodreason.ai"},
+    headers={
+        "Accept": "image/webp",
+        "Authorization": "Bearer YOUR_API_KEY"
+    }
+)
+
+print(response.status_code)
+print(response.headers["Content-Type"])`;
+
+                const jsExample = `const response = await fetch("${baseUrl}/scrape", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "image/png",
+    "Authorization": "Bearer YOUR_API_KEY"
+  },
+  body: JSON.stringify({
+    url: "https://goodreason.ai",
+    max_screenshots: 5,
+    wait: 2000,
+    browser_dim: [1440, 2400]
+  })
+});
+
+const contentType = response.headers.get("Content-Type");`;
+
+                const navItems = [
+                    { href: '#highlights', label: { en: 'Highlights', zh: '亮点' } },
+                    { href: '#api', label: { en: 'API', zh: 'API' } },
+                    { href: '#examples', label: { en: 'Examples', zh: '示例' } },
+                    { href: '#config', label: { en: 'Defaults', zh: '默认值' } },
+                ];
+
+                const hlIcons = [
+                    'fas fa-expand-arrows-alt', 'fas fa-code', 'fas fa-bolt',
+                    'fas fa-directions', 'fas fa-layer-group', 'fas fa-shield-alt',
+                ];
+                const hlColors = [
+                    'bg-sky-500/10 text-sky-400', 'bg-amber-500/10 text-amber-400',
+                    'bg-rose-500/10 text-rose-400', 'bg-emerald-500/10 text-emerald-400',
+                    'bg-purple-500/10 text-purple-400', 'bg-blue-500/10 text-blue-400',
+                ];
+
+                const i18n = {
+                    en: {
+                        hero: {
+                            status: 'Server is running',
+                            titlePre: 'URL to',
+                            titleHighlight: 'Screenshots API',
+                            desc: 'Send a URL, get back website data and beautiful screenshots. A high-quality, browser-based web scraping API powered by Playwright and Firefox.',
+                            cta: 'API Reference',
+                            termComment: 'Send a URL, get screenshots + website data',
+                        },
+                        highlights: {
+                            title: 'Project Highlights',
+                            desc: 'A resource-intensive but higher quality scraper than many alternatives.',
+                            items: [
+                                { title: 'Full-Page Screenshots', desc: 'Scrolls through the entire page and captures screenshots of different visible sections automatically.' },
+                                { title: 'Browser Rendering', desc: 'Uses Playwright with Firefox — fully executes JavaScript, handles SPAs and dynamic content rendering.' },
+                                { title: 'Zero State & Blocking API', desc: 'No databases, no caching, no complexity. HTTP request in, multipart response with files out.' },
+                                { title: 'Smart Redirects', desc: 'Automatically follows HTTP redirects and returns the full response status code and headers.' },
+                                { title: 'Configurable Queue', desc: 'Tasks processed in a queue with configurable concurrency, memory allocation, and timeouts per job.' },
+                                { title: 'Security Layers', desc: 'Container isolation, process isolation, URL validation, strict resource limits, and API key authentication.' },
+                            ],
+                        },
+                        api: {
+                            title: 'API Reference',
+                            desc: 'Two endpoints, simple and powerful.',
+                            rootDesc: 'Health Check',
+                            rootDetail: 'Returns HTTP 200 with a text message confirming the server is running. Useful for monitoring and readiness probes.',
+                            scrapeDesc: 'Scrape a URL',
+                            requestBody: 'Request Body',
+                            params: 'Parameters',
+                            required: 'Required',
+                            optional: 'Optional',
+                            paramList: [
+                                { name: 'url', type: 'string', required: true, desc: 'The URL to scrape, e.g. https://goodreason.ai' },
+                                { name: 'browser_dim', type: '[w, h]', required: false, desc: 'Browser viewport dimensions in pixels. Default: [1280, 2000]. Range: [100, 100] – [2400, 4000]' },
+                                { name: 'wait', type: 'number', required: false, desc: 'Milliseconds to wait after each scroll before capturing. Default: 1000. Max: 5000. Recommended ≥ 1000' },
+                                { name: 'max_screenshots', type: 'number', required: false, desc: 'Maximum number of screenshots returned. Default: 5. Max: 10' },
+                            ],
+                            imageFormats: 'Screenshot Format (Accept Header)',
+                            imageFormatsNote: 'Set the Accept header to choose the output image format. Defaults to image/jpeg if not specified.',
+                            auth: 'Authentication',
+                            authDesc: 'If the server is configured with API keys, include a Bearer token in the Authorization header. Keys are set via environment variables starting with SCRAPER_API_KEY.',
+                            response: 'Response',
+                            respParts: [
+                                { type: 'application/json', desc: 'Request metadata — includes HTTP status, response headers, and other metadata from the scraped page.' },
+                                { type: 'text/html (varies)', desc: 'The website content — usually HTML, but matches the actual content type of the resource.' },
+                                { type: 'image/jpeg (varies)', desc: 'Screenshots of different sections of the page — up to 5 by default (max 10).' },
+                            ],
+                            respErr: 'JSON response with an "error" key describing the issue.',
+                        },
+                        examples: {
+                            title: 'Usage Examples',
+                            desc: 'Integrate ScrapeServ into your workflow in seconds.',
+                            pythonComment: 'Response is multipart/mixed — parse accordingly',
+                            jsComment: 'Response is multipart/mixed',
+                        },
+                        config: {
+                            title: 'Default Configuration',
+                            desc: 'Key defaults you should know when calling the API. All configurable from source.',
+                            items: [
+                                { key: 'MEM_LIMIT_MB', value: '4,000', label: 'Memory limit per task (MB)' },
+                                { key: 'MAX_CONCURRENT', value: '3', label: 'Maximum concurrent tasks' },
+                                { key: 'DEFAULT_SCREENSHOTS', value: '5', label: 'Screenshots per request' },
+                                { key: 'MAX_SCREENSHOTS', value: '10', label: 'Max screenshots cap' },
+                                { key: 'DEFAULT_WAIT', value: '1,000 ms', label: 'Wait time after scroll' },
+                                { key: 'MAX_WAIT', value: '5,000 ms', label: 'Maximum wait allowed' },
+                                { key: 'QUALITY', value: '85', label: 'Screenshot JPEG quality' },
+                                { key: 'BROWSER_DIM', value: '1280×2000', label: 'Default viewport (px)' },
+                                { key: 'MAX_DIM', value: '2400×4000', label: 'Max viewport size (px)' },
+                            ],
+                        },
+                        footer: {
+                            apiBy: 'API by',
+                            pageBy: 'Page by',
+                            pageAuthor: '仙姑本咕',
+                        },
+                        common: {
+                            copy: 'Copy',
+                            copied: 'Copied to clipboard!',
+                        },
+                    },
+                    zh: {
+                        hero: {
+                            status: '服务运行中',
+                            titlePre: 'URL 转',
+                            titleHighlight: '截图 API',
+                            desc: '发送一个 URL，即可获取网站数据和精美截图。基于 Playwright 和 Firefox 构建的高质量、浏览器级网页抓取 API。',
+                            cta: 'API 文档',
+                            termComment: '发送 URL，获取截图 + 网页数据',
+                        },
+                        highlights: {
+                            title: '项目亮点',
+                            desc: '资源消耗较高，但质量远超许多替代方案。',
+                            items: [
+                                { title: '全页面截图', desc: '自动滚动浏览整个页面，对不同可见区域分别截图。' },
+                                { title: '浏览器级渲染', desc: '使用 Playwright + Firefox — 完整执行 JavaScript，支持 SPA 和动态内容渲染。' },
+                                { title: '零状态阻塞式 API', desc: '无数据库、无缓存、无复杂度。HTTP 请求进入，multipart 响应携带文件返回。' },
+                                { title: '智能重定向', desc: '自动跟随 HTTP 重定向，并返回完整的响应状态码和头部信息。' },
+                                { title: '可配置任务队列', desc: '任务在队列中处理，支持可配置的并发数量、内存分配和超时设置。' },
+                                { title: '多重安全机制', desc: '容器隔离、进程隔离、URL 验证、严格资源限制和 API 密钥认证。' },
+                            ],
+                        },
+                        api: {
+                            title: 'API 参考',
+                            desc: '两个端点，简洁而强大。',
+                            rootDesc: '健康检查',
+                            rootDetail: '返回 HTTP 200 和一条文本消息，确认服务器正在运行。适用于监控和就绪探测。',
+                            scrapeDesc: '抓取一个 URL',
+                            requestBody: '请求体',
+                            params: '参数说明',
+                            required: '必填',
+                            optional: '可选',
+                            paramList: [
+                                { name: 'url', type: 'string', required: true, desc: '要抓取的 URL，例如 https://goodreason.ai' },
+                                { name: 'browser_dim', type: '[w, h]', required: false, desc: '浏览器视口尺寸（像素）。默认: [1280, 2000]。范围: [100, 100] – [2400, 4000]' },
+                                { name: 'wait', type: 'number', required: false, desc: '每次滚动后等待截图的毫秒数。默认: 1000。最大: 5000。建议 ≥ 1000' },
+                                { name: 'max_screenshots', type: 'number', required: false, desc: '返回的最大截图数量。默认: 5。最大: 10' },
+                            ],
+                            imageFormats: '截图格式（Accept 请求头）',
+                            imageFormatsNote: '通过 Accept 请求头选择输出图片格式。未指定时默认为 image/jpeg。',
+                            auth: '身份认证',
+                            authDesc: '如果服务器配置了 API 密钥，请在 Authorization 请求头中携带 Bearer Token。密钥通过以 SCRAPER_API_KEY 开头的环境变量设置。',
+                            response: '响应',
+                            respParts: [
+                                { type: 'application/json', desc: '请求元数据 — 包括被抓取页面的 HTTP 状态码、响应头和其他元信息。' },
+                                { type: 'text/html（视情况而定）', desc: '网站内容 — 通常为 HTML，但会匹配资源的实际内容类型。' },
+                                { type: 'image/jpeg（视情况而定）', desc: '页面不同区域的截图 — 默认最多 5 张（上限 10 张）。' },
+                            ],
+                            respErr: '包含 "error" 键的 JSON 响应，描述具体错误。',
+                        },
+                        examples: {
+                            title: '使用示例',
+                            desc: '几秒钟内将 ScrapeServ 集成到你的工作流中。',
+                            pythonComment: '响应为 multipart/mixed — 请相应解析',
+                            jsComment: '响应为 multipart/mixed',
+                        },
+                        config: {
+                            title: '默认配置',
+                            desc: '调用 API 时需要了解的关键默认值。从源码构建时均可自定义。',
+                            items: [
+                                { key: 'MEM_LIMIT_MB', value: '4,000', label: '每个任务的内存限制 (MB)' },
+                                { key: 'MAX_CONCURRENT', value: '3', label: '最大并发任务数' },
+                                { key: 'DEFAULT_SCREENSHOTS', value: '5', label: '每次请求截图数' },
+                                { key: 'MAX_SCREENSHOTS', value: '10', label: '截图数量上限' },
+                                { key: 'DEFAULT_WAIT', value: '1,000 ms', label: '滚动后等待时间' },
+                                { key: 'MAX_WAIT', value: '5,000 ms', label: '最大等待时间上限' },
+                                { key: 'QUALITY', value: '85', label: '截图 JPEG 质量' },
+                                { key: 'BROWSER_DIM', value: '1280×2000', label: '默认视口大小 (px)' },
+                                { key: 'MAX_DIM', value: '2400×4000', label: '最大视口大小 (px)' },
+                            ],
+                        },
+                        footer: {
+                            apiBy: 'API 仓库',
+                            pageBy: '页面作者',
+                            pageAuthor: '仙姑本咕',
+                        },
+                        common: {
+                            copy: '复制',
+                            copied: '已复制到剪贴板！',
+                        },
+                    },
+                };
+
+                const t = computed(() => i18n[lang.value]);
+
+                return {
+                    lang, t, toggleLang, navItems,
+                    hlIcons, hlColors,
+                    copyText, showToast,
+                    baseUrl,
+                    requestExample, curlExample, pythonExample, jsExample,
+                };
+            },
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

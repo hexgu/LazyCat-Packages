@@ -1,0 +1,35 @@
+name: ScrapeServ
+package: cloud.lazycat.app.scrapeserv
+version: 1.0.16
+min_os_version: 1.3.9
+unsupported_platforms:
+  - ios
+  - android
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+locales:
+  zh:
+    name: ScrapeServ
+    description: 简单的 URL 截图服务器
+  en:
+    name: ScrapeServ
+    description: Simple URL to screenshots server
+application:
+  public_path:
+    - /
+  background_task: false
+  subdomain: scrapeserv
+  routes:
+    - /=file:///lzcapp/pkg/content/
+  upstreams:
+    - location: /scrape
+      backend: http://scrapeserv:5006
+      disable_trim_location: true
+services:
+  scrapeserv:
+    #image: usaiinc/scraper:latest
+    image: registry.lazycat.cloud/hexg/usaiinc/scraper:c3b1219fb449538c
+    environment:
+      - TZ=Asia/Shanghai
+    binds:
+      - /lzcapp/var/.env:/app/.env

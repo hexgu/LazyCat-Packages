@@ -1,0 +1,30 @@
+lzc-sdk-version: '0.1'
+name: neko-master
+package: cloud.lazycat.app.neko-master
+version: 1.2.3
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+locales:
+  zh:
+    name: Neko Master
+    description: Neko Master 是一个现代化的优雅的网络流量可视化和分析仪表板。
+  en:
+    name: Neko Master
+    description: A modern and elegant dashboard for network traffic visualization and analysis.
+application:
+  background_task: true
+  subdomain: neko-master
+  routes:
+    - /=http://neko-master:3000/
+    - /_cm_ws=http://neko-master:3002/
+  health_check:
+    test_url: http://neko-master:3000/
+services:
+  neko-master:
+    image: ghcr.nju.edu.cn/foru17/neko-master:1.2.3
+    environment:
+      - TZ=Asia/Shanghai
+      - NODE_ENV=production
+      - DB_PATH=/app/data/stats.db
+    binds:
+      - /lzcapp/var/data:/app/data
