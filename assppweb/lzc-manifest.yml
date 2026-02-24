@@ -1,0 +1,30 @@
+name: AssppWeb
+package: cloud.lazycat.app.assppweb
+version: 1.1.3
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+locales:
+  zh:
+    name: AssppWeb
+    description: 一款基于网页的工具，可在 App Store 之外获取并安装 iOS 应用。只需使用您的 Apple ID 进行身份验证，搜索应用、获取许可，并将 IPA 直接安装到您的设备上。
+  en:
+    name: AssppWeb
+    description: A web-based tool for acquiring and installing iOS apps outside the App Store. Authenticate with your Apple ID, search for apps, acquire licenses, and install IPAs directly to your device.
+application:
+  subdomain: assppweb
+  background_task: true
+  multi_instance: false
+  gpu_accel: false
+  public_path:
+    - /
+  routes:
+    - /=http://assppweb:8080/
+services:
+  assppweb:
+    # image: ghcr.nju.edu.cn/lakr233/assppweb:latest
+    image: registry.lazycat.cloud/hexg/lakr233/assppweb:70e067f588caccf1
+    binds:
+      - /lzcapp/var/data:/data
+    environment:
+      - DATA_DIR=/data
+      - PORT=8080
