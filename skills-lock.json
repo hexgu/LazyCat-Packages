@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "skills": {
+    "lazycat-advanced-routing": {
+      "source": "whoamihappyhacking/lazycat-skills",
+      "sourceType": "github",
+      "computedHash": "68f66f4571f08cb487b6414426a4a5188f87b75dbf4643eee315d55609c00043"
+    },
+    "lazycat-auth-integration": {
+      "source": "whoamihappyhacking/lazycat-skills",
+      "sourceType": "github",
+      "computedHash": "9e69e815a795b438dda0e1f64b6415367447ebb01c97bcd49e77dd90f24788b8"
+    },
+    "lazycat-developer-expert": {
+      "source": "whoamihappyhacking/lazycat-skills",
+      "sourceType": "github",
+      "computedHash": "189aa265b38898af1287465d37bf9e62871934c84e46cd6696d8fccdd58794ca"
+    },
+    "lazycat-dynamic-deploy": {
+      "source": "whoamihappyhacking/lazycat-skills",
+      "sourceType": "github",
+      "computedHash": "cd42c9f0b8a0f9040d4bbdded43ba56b2428787a13057cd3099261aa32d7af2e"
+    },
+    "lazycat-lpk-builder": {
+      "source": "whoamihappyhacking/lazycat-skills",
+      "sourceType": "github",
+      "computedHash": "6e9f8e48ee57a68433ae7c73a07f24d848e19fdd1aefdb94990728128f380a41"
+    }
+  }
+}
