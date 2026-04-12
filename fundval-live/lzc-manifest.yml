@@ -3,6 +3,10 @@ version: 2.0.1+1.0.11
 name: FundVal Live
 author: Hexg
 homepage: https://github.com/hexgu/LazyCat-Packages
+
+# usage: 欢迎使用本应用
+
+# 核心容器配置
 application:
   subdomain: fundval-live
   multi_instance: true
@@ -10,6 +14,14 @@ application:
     test_url: http://fundval-live:21345/
   routes:
     - /=http://fundval-live:21345/
+# # 扩展功能配置
+# ext_config:
+#   # 挂载文档目录
+#   enable_document_access: false
+#   # 挂载媒体目录
+#   enable_media_access: false
+#   # 默认域名前缀
+#   default_prefix_domain: fund
 locales:
   zh:
     name: FundVal Live

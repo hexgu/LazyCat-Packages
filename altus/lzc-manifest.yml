@@ -1,0 +1,35 @@
+package: cloud.lazycat.app.azahar
+version: 2.124.3+1.0.1
+name: Azahar
+description: Azahar is an open-source 3DS emulator based on Citra.
+author: Hexg
+homepage: https://github.com/hexgu/LazyCat-Packages
+
+# 核心容器配置
+application:
+  subdomain: altus
+  # 自动启动且不休眠
+  background_task: true
+  # 支持多实例部署
+  multi_instance: false
+  # health_check:
+  #   test_url: http://azahar:3000/
+  routes:
+    - /=http://azahar:3000/
+locales:
+  zh:
+    name: Azahar
+    description: Azahar 是一个基于 Citra 的开源 3DS 模拟器。
+  en:
+    name: Azahar
+    description: Azahar is an open-source 3DS emulator based on Citra.
+
+services:
+  azahar:
+    #image: ghcr.nju.edu.cn/linuxserver/azahar:latest
+    image: ghcr.nju.edu.cn/linuxserver/azahar:latest
+    environment:
+      TZ: "Asia/Shanghai"
+    binds:
+      - /lzcapp/var/config:/config
+    shm_size: "1gb"

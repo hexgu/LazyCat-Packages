@@ -1,0 +1,35 @@
+package: cloud.lazycat.app.altus
+version: 5.7.2+1.0.4
+name: Altus
+description: Altus is an Electron-based WhatsApp client with themes and multiple account support.
+author: Hexg
+homepage: https://github.com/hexgu/LazyCat-Packages
+
+# 核心容器配置
+application:
+  subdomain: altus
+  # 自动启动且不休眠
+  background_task: true
+  # 支持多实例部署
+  multi_instance: false
+  # health_check:
+  #   test_url: http://altus:3000/
+  routes:
+    - /=http://altus:3000/
+locales:
+  zh:
+    name: Altus
+    description: Altus 是一个基于 Electron 的 WhatsApp 客户端，支持主题和多账户。
+  en:
+    name: Altus
+    description: Altus is an Electron-based WhatsApp client with themes and multiple account support.
+
+services:
+  altus:
+    #image: ghcr.nju.edu.cn/linuxserver/altus:latest
+    image: registry.lazycat.cloud/hexg/linuxserver/altus:55363c473e7d7448
+    environment:
+      TZ: "Asia/Shanghai"
+    binds:
+      - /lzcapp/var/config:/config
+    shm_size: "1gb"
