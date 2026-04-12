@@ -1,0 +1,34 @@
+application:
+  subdomain: qbittorrent-libtorrentv1
+  background_task: true
+  multi_instance: false
+  file_handler:
+    mime:
+      - application/x-magnet
+      - application/x-bittorrent
+    actions:
+      open: /open?file=%u
+  public_path:
+    - /
+  routes:
+    - /=http://qbittorrent-libtorrentv1.cloud.lazycat.app.qbittorrent-libtorrentv1.lzcapp:8080/
+  ingress:
+    - protocol: tcp
+      port: 37312
+      service: qbittorrent-libtorrentv1
+    - protocol: udp
+      port: 37312
+      service: qbittorrent-libtorrentv1
+services:
+  qbittorrent-libtorrentv1:
+    image: ghcr.nju.edu.cn/linuxserver/qbittorrent:5.1.2-libtorrentv1
+    binds:
+      - /lzcapp/run/mnt/home:/home
+      - /lzcapp/var/config:/config
+      - /lzcapp/var/downloads:/downloads
+    environment:
+      PUID: "0"
+      PGID: "0"
+      TZ: Asia/Shanghai
+      WEBUI_PORT: "8080"
+      TORRENTING_PORT: "37312"

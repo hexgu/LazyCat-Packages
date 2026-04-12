@@ -1,0 +1,13 @@
+application:
+  subdomain: certimate
+  background_task: true
+  multi_instance: false
+  public_path:
+    - /
+  routes:
+    - /=http://certimate.cloud.lazycat.app.certimate.lzcapp:8090/
+services:
+  certimate:
+    image: registry.lazycat.cloud/hexg/certimate/certimate:5205eb95da877ac9
+    binds:
+      - /lzcapp/var/data:/app/pb_data

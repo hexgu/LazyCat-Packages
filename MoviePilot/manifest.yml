@@ -1,0 +1,37 @@
+application:
+  subdomain: movie-pilot
+  background_task: true
+  multi_instance: false
+  routes:
+    - /=http://movie-pilot.cloud.lazycat.app.movie-pilot.lzcapp:3000/
+services:
+  movie-pilot:
+    image: ghcr.nju.edu.cn/jxxghp/moviepilot:2.9.28
+    binds:
+      - /lzcapp/var/config:/config
+      - /lzcapp/var/core:/moviepilot/.cache/ms-playwright
+      - /lzcapp/run/mnt/home:/home
+    environment:
+      PUID: "0"
+      PGID: "0"
+      UMASK: "022"
+      SUPERUSER: admin
+      MOVIEPILOT_AUTO_UPDATE: "false"
+      GITHUB_PROXY: https://ghfast.top/
+      PIP_PROXY: https://mirrors.cernet.edu.cn/pypi/simple/
+      CACHE_BACKEND_TYPE: redis
+      CACHE_BACKEND_URL: redis://:{{ stable_secret "redis_password" }}@redis.cloud.lazycat.app.movie-pilot.lzcapp:6379
+    depends_on:
+      - redis
+  redis:
+    image: registry.lazycat.cloud/hexg/library/redis:d32c277b2bdcbb23
+    command: redis-server --save 600 1 --requirepass {{ stable_secret "redis_password" }}
+    binds:
+      - /lzcapp/var/redis:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli -a '{{ stable_secret "redis_password" }}' ping | grep PONG
+      interval: 5s
+      timeout: 5s
+      retries: 10

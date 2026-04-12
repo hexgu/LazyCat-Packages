@@ -1,0 +1,18 @@
+application:
+  subdomain: scrapeserv
+  background_task: false
+  public_path:
+    - /
+  routes:
+    - /=file:///lzcapp/pkg/content/
+  upstreams:
+    - location: /scrape
+      backend: http://scrapeserv.cloud.lazycat.app.scrapeserv.lzcapp:5006
+      disable_trim_location: true
+services:
+  scrapeserv:
+    image: registry.lazycat.cloud/hexg/usaiinc/scraper:c3b1219fb449538c
+    binds:
+      - /lzcapp/var/.env:/app/.env
+    environment:
+      TZ: Asia/Shanghai

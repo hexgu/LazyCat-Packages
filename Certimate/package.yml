@@ -1,7 +1,6 @@
-lzc-sdk-version: "0.1"
-name: Certimate V4
 package: cloud.lazycat.app.certimate
 version: 0.4.18
+name: Certimate V4
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
 locales:
@@ -11,17 +10,6 @@ locales:
   en:
     name: Certimate
     description: An open-source SSL certificate management tool that helps you automatically apply for and deploy SSL certificates, as well as automatically renew them when they are about to expire.
-application:
-  subdomain: certimate
-  background_task: true
-  multi_instance: false
-  gpu_accel: false
-  public_path:
-    - /
-  routes:
-    - /=http://certimate:8090/
-services:
-  certimate:
-    image: registry.lazycat.cloud/hexg/certimate/certimate:5205eb95da877ac9
-    binds:
-      - /lzcapp/var/data:/app/pb_data
+permissions:
+  required:
+    - net.internet

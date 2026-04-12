@@ -1,0 +1,16 @@
+application:
+  subdomain: assppweb
+  background_task: true
+  multi_instance: false
+  public_path:
+    - /
+  routes:
+    - /=http://assppweb.cloud.lazycat.app.assppweb.lzcapp:8080/
+services:
+  assppweb:
+    image: registry.lazycat.cloud/hexg/lakr233/assppweb:2d05bd5747c50c60
+    binds:
+      - /lzcapp/var/data:/data
+    environment:
+      DATA_DIR: /data
+      PORT: "8080"

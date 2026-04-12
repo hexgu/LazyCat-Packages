@@ -1,0 +1,28 @@
+application:
+  subdomain: wakapi
+  oidc_redirect_path: /oidc/lazycat/callback
+  background_task: true
+  public_path:
+    - /
+  routes:
+    - /=http://wakapi.cloud.lazycat.app.wakapi.lzcapp:3000/
+  health_check:
+    test_url: http://wakapi.cloud.lazycat.app.wakapi.lzcapp:3000/api/health
+services:
+  wakapi:
+    image: registry.lazycat.cloud/hexg/muety/wakapi:a7b33301db87b740
+    binds:
+      - /lzcapp/var/data:/data
+    environment:
+      WAKAPI_PASSWORD_SALT: '{{ stable_secret "WAKAPI_PASSWORD_SALT" }}'
+      WAKAPI_EXPOSE_METRICS: "true"
+      WAKAPI_DISABLE_LOCAL_AUTH: "true"
+      WAKAPI_OIDC_ALLOW_SIGNUP: "true"
+      WAKAPI_OIDC_PROVIDERS_0_NAME: lazycat
+      WAKAPI_OIDC_PROVIDERS_0_DISPLAY_NAME: LazyCat
+      WAKAPI_OIDC_PROVIDERS_0_CLIENT_ID: ${LAZYCAT_AUTH_OIDC_CLIENT_ID}
+      WAKAPI_OIDC_PROVIDERS_0_CLIENT_SECRET: ${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
+      WAKAPI_OIDC_PROVIDERS_0_ENDPOINT: ${LAZYCAT_AUTH_OIDC_ISSUER_URI}
+      WAKAPI_OIDC_PROVIDERS_0_SCOPES: openid,profile,email,groups
+      WAKAPI_PUBLIC_URL: https://${LAZYCAT_APP_DOMAIN}
+      WAKAPI_INSECURE_COOKIES: "true"

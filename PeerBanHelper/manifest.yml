@@ -1,0 +1,16 @@
+application:
+  subdomain: peerbanhelper
+  background_task: true
+  routes:
+    - /=http://peerbanhelper.cloud.lazycat.app.peerbanhelper.lzcapp:9898/
+  health_check:
+    test_url: http://peerbanhelper.cloud.lazycat.app.peerbanhelper.lzcapp:9898/dashboard
+services:
+  peerbanhelper:
+    image: registry.cn-hangzhou.aliyuncs.com/ghostchu/peerbanhelper:v9.3.10
+    binds:
+      - /lzcapp/var/data:/app/data
+    environment:
+      PUID: "0"
+      PGID: "0"
+      TZ: Asia/Shanghai

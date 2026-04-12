@@ -1,2 +1,3 @@
-pkgout: ./ # 输出的lpk包的位置
-icon: ./logo-mid.png   # 图标文件的位置
+manifest: ./manifest.yml
+pkgout: ./
+icon: ./logo-mid.png

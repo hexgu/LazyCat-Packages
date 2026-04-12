@@ -1,0 +1,14 @@
+application:
+  subdomain: qbitwebui
+  background_task: false
+  routes:
+    - /=http://qbitwebui.cloud.lazycat.app.qbitwebui.lzcapp:3000/
+services:
+  qbitwebui:
+    image: registry.lazycat.cloud/hexg/maciejonos/qbitwebui:f0e4c66d47783e79
+    binds:
+      - /lzcapp/var:/data
+    environment:
+      TZ: Asia/Shanghai
+      ENCRYPTION_KEY: '{{ stable_secret "encryption_key" | substr 0 64 }}'
+      ALLOW_SELF_SIGNED_CERTS: "true"

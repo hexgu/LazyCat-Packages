@@ -1,6 +1,4 @@
+manifest: ./manifest.yml
 pkgout: ./
 icon: ./icon.png
-manifest: ./lzc-manifest.yml
-extras:
-  - ./searxng-settings.yml
-  - ./bucket.config.json
+contentdir: ./content

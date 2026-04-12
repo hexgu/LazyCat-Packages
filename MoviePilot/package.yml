@@ -1,0 +1,16 @@
+package: cloud.lazycat.app.movie-pilot
+version: 2.9.28
+name: MoviePilot
+description: 媒体库自动化管理
+homepage: https://github.com/hexgu/LazyCat-Packages
+author: Hexg
+permissions:
+  required:
+    - net.internet
+    - document.private
+    - document.read
+    - document.write
+  optional:
+    - media.read
+    - device.dri.render
+    - power.shutdown.inhibit

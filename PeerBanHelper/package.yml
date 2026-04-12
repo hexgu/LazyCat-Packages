@@ -1,7 +1,6 @@
-lzc-sdk-version: '0.1'
-name: PeerBanHelper
 package: cloud.lazycat.app.peerbanhelper
-version: 9.3.8
+version: 9.3.10
+name: PeerBanHelper
 homepage: https://github.com/hexgu/LazyCat-Packages
 author: Hexg
 locales:
@@ -11,19 +10,8 @@ locales:
   en:
     name: PeerBanHelper
     description: BT Anti-Leech Tool - Automatically ban unpopular, leeching, and abnormal BT clients, and supports custom rules. Supports qB/qBEE/Deluge/BiglyBT/BitComet
-application:
-  background_task: true
-  subdomain: peerbanhelper
-  routes:
-    - /=http://peerbanhelper:9898/
-  health_check:
-    test_url: http://peerbanhelper:9898/dashboard
-services:
-  peerbanhelper:
-    image: registry.lazycat.cloud/hexg/ghostchu/peerbanhelper:9aed981fb48a0f07
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=Asia/Shanghai
-    binds:
-      - /lzcapp/var/data:/app/data
+permissions:
+  required:
+    - net.lan
+  optional:
+    - net.internet

@@ -1,0 +1,14 @@
+application:
+  subdomain: fundval-live
+  multi_instance: true
+  routes:
+    - /=http://fundval-live.cloud.lazycat.app.fundval-live.lzcapp:21345/
+  health_check:
+    test_url: http://fundval-live.cloud.lazycat.app.fundval-live.lzcapp:21345/
+services:
+  fundval-live:
+    image: ghcr.nju.edu.cn/ye-yu-mo/fundval-live:v2.0.1
+    binds:
+      - /lzcapp/var/data:/app/backend/data
+    environment:
+      TZ: Asia/Shanghai
