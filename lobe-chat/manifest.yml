@@ -1,9 +1,0 @@
-application:
-  subdomain: lobe-chat
-  background_task: false
-  multi_instance: false
-  routes:
-    - /=http://lobe-chat.lobe-chat.lzcapp:3210/
-services:
-  lobe-chat:
-    image: registry.lazycat.cloud/hexg/lobehub/lobe-chat:b33aa424fdad9883
