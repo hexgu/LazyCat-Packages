@@ -1,34 +1,20 @@
 params:
-  - id: enable_oidc
-    type: bool
-    name: "启用桌面端 OIDC"
-    description: "启用后会为 LobeHub 桌面端自动同步开启 OIDC 支持；需同时提供 JWKS_KEY。"
-    default_value: "false"
   - id: jwks_key
     type: secret
     name: "JWKS_KEY"
-    description: "LobeHub 桌面端 OIDC 所需的 JWKS JSON 字符串。开启桌面端 OIDC 时必填，可用项目内 scripts/generate-oidc-jwk.mjs 生成。"
+    description: "RS256 JWKS JSON 字符串。用于 Agent Gateway 校验浏览器会话 JWT，并提供内部 JWT 签发；配置后桌面端 OIDC 自动启用（官方已无独立 ENABLE_OIDC 开关）。留空则 Gateway Mode 与 OIDC 均不生效，对话回退到浏览器端执行。生成方式见 https://lobehub.com/docs/self-hosting/platform/docker-compose 的 Agent Gateway 小节。"
     optional: true
 
 locales:
   zh:
-    enable_oidc:
-      name: "启用桌面端 OIDC"
-      description: "启用后会为 LobeHub 桌面端自动同步开启 OIDC 支持；需同时提供 JWKS_KEY。"
     jwks_key:
       name: "JWKS_KEY"
-      description: "LobeHub 桌面端 OIDC 所需的 JWKS JSON 字符串。开启桌面端 OIDC 时必填，可用项目内 scripts/generate-oidc-jwk.mjs 生成。"
+      description: "RS256 JWKS JSON 字符串。用于 Agent Gateway 校验浏览器会话 JWT，并提供内部 JWT 签发；配置后桌面端 OIDC 自动启用（官方已无独立 ENABLE_OIDC 开关）。留空则 Gateway Mode 与 OIDC 均不生效，对话回退到浏览器端执行。生成方式见 https://lobehub.com/docs/self-hosting/platform/docker-compose 的 Agent Gateway 小节。"
   zh_CN:
-    enable_oidc:
-      name: "启用桌面端 OIDC"
-      description: "启用后会为 LobeHub 桌面端自动同步开启 OIDC 支持；需同时提供 JWKS_KEY。"
     jwks_key:
       name: "JWKS_KEY"
-      description: "LobeHub 桌面端 OIDC 所需的 JWKS JSON 字符串。开启桌面端 OIDC 时必填，可用项目内 scripts/generate-oidc-jwk.mjs 生成。"
+      description: "RS256 JWKS JSON 字符串。用于 Agent Gateway 校验浏览器会话 JWT，并提供内部 JWT 签发；配置后桌面端 OIDC 自动启用（官方已无独立 ENABLE_OIDC 开关）。留空则 Gateway Mode 与 OIDC 均不生效，对话回退到浏览器端执行。生成方式见 https://lobehub.com/docs/self-hosting/platform/docker-compose 的 Agent Gateway 小节。"
   en:
-    enable_oidc:
-      name: "Enable desktop OIDC"
-      description: "Enable OIDC support for automatic sync with LobeHub Desktop. Requires JWKS_KEY to be provided as well."
     jwks_key:
       name: "JWKS_KEY"
-      description: "JWKS JSON string required by LobeHub Desktop OIDC. Required when desktop OIDC is enabled. You can generate it with scripts/generate-oidc-jwk.mjs."
+      description: "RS256 JWKS JSON string. Used by the Agent Gateway to verify browser session JWTs and to sign internal JWTs. Setting it also enables desktop OIDC automatically (the official build has no separate ENABLE_OIDC switch). When left empty, neither Gateway Mode nor OIDC takes effect and chats fall back to browser-side execution. See the Agent Gateway section of https://lobehub.com/docs/self-hosting/platform/docker-compose for how to generate it."

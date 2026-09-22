@@ -11,9 +11,21 @@ application:
       domain_prefix: s3
       backend: http://rustfs.cloud.lazycat.app.lobehub.lzcapp:9000
       disable_trim_location: true
+    # Agent Gateway：浏览器经 wss://gateway-<AppDomain> 建立 WebSocket 连接
+    - location: /
+      domain_prefix: gateway
+      backend: http://gateway.cloud.lazycat.app.lobehub.lzcapp:8787
+      disable_trim_location: true
+      fix_websocket_header: true
+    # Device Gateway：lh connect 设备接入（不需要可删除这一段）
+    - location: /
+      domain_prefix: device
+      backend: http://gateway.cloud.lazycat.app.lobehub.lzcapp:8788
+      disable_trim_location: true
+      fix_websocket_header: true
 services:
   lobe:
-    image: registry.lazycat.cloud/hexg/lobehub/lobehub:125b1fd8423329c4
+    image: docker.1ms.run/lobehub/lobehub:2.2.18
     depends_on:
       - postgresql
       - redis
@@ -32,6 +44,8 @@ services:
       - SSRF_ALLOW_PRIVATE_IP_ADDRESS=1
       - S3_BUCKET=lobe
       - S3_ENDPOINT=https://s3-{{ .S.AppDomain }}
+      # S3_ENDPOINT 供浏览器访问；服务端自身的 S3 请求走应用内网，不绕 ingress
+      - S3_INTERNAL_ENDPOINT=http://rustfs.cloud.lazycat.app.lobehub.lzcapp:9000
       - S3_PUBLIC_DOMAIN=https://s3-{{ .S.AppDomain }}
       - S3_ENABLE_PATH_STYLE=1
       - S3_SET_ACL=0
@@ -47,16 +61,48 @@ services:
       - >-
         AUTH_SECRET={{ stable_secret "auth_secret" | sha256sum | substr 0 32 |
         b64enc }}
-      - ENABLE_OIDC={{ if and .U.enable_oidc .U.jwks_key }}1{{ else }}0{{ end }}
-      - >-
-        JWKS_KEY={{ if and .U.enable_oidc .U.jwks_key }}{{ .U.jwks_key }}{{ end
-        }}
+      # JWKS_KEY 即开关：配置后 OIDC 自动启用（官方已无独立 ENABLE_OIDC 开关），
+      # 同时用于 Agent Gateway 校验浏览器会话 JWT
+      # 单引号包裹：JWKS 若是美化格式（含 ": " 空格）也不会破坏 YAML
+      - 'JWKS_KEY={{ .U.jwks_key }}'
+      # 由 JWKS_KEY 派生出的公钥（sprig pick 去掉 d/p/q/dp/dq/qi）。
+      # lobe 自带的启动自检会检查本变量是否存在于「本容器」环境，且不允许含私钥字段
+      - 'JWKS_PUBLIC_KEY={{ if .U.jwks_key }}{{ $k := (fromJson .U.jwks_key).keys | first }}{{ toJson (dict "keys" (list (pick $k "kty" "alg" "use" "kid" "n" "e"))) }}{{ end }}'
       - AUTH_SSO_PROVIDERS=generic-oidc
       - AUTH_GENERIC_OIDC_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
       - AUTH_GENERIC_OIDC_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
       - AUTH_GENERIC_OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}
+      # ---- Agent Gateway（服务端执行 Agent 任务）----
+      - ENABLE_AGENT_GATEWAY=1
+      - AGENT_GATEWAY_URL=https://gateway-{{ .S.AppDomain }}
+      - AGENT_GATEWAY_INTERNAL_URL=http://gateway.cloud.lazycat.app.lobehub.lzcapp:8787
+      - DEVICE_GATEWAY_URL=http://gateway.cloud.lazycat.app.lobehub.lzcapp:8788
+      - AGENT_GATEWAY_SERVICE_TOKEN={{ stable_secret "gateway_service_token" | sha256sum | substr 0 32 }}
+      - DEVICE_GATEWAY_SERVICE_TOKEN={{ stable_secret "gateway_service_token" | sha256sum | substr 0 32 }}
+      - BRAVE_API_KEY=BSAn-SbWJVQPcz4GMS8TQjmP6Tl8AP_
+      - SEARXNG_URL=http://host.lzcapp:32194
+      - BROWSERLESS_TOKEN=2V84BemGGQLC2B77bdfcdf61b2a57620dff14c72276b40ee4
+      - EXA_API_KEY=f3aa2971-ec08-4db4-b058-8cd955e21fc6
+      - FIRECRAWL_API_KEY=fc-ad41bd4895014a83b4d1f312c0460f40
+      - JINA_READER_API_KEY=jina_42c3a7b033f74ba8b4c6d841e8101548J_d5-VckH1MVCX67HMo9W0pYgblr
+      - JINA_USE_CN_DOMAINS=true
+      - CRAWLER_IMPLS="browserless,exa,firecrawl,naive"
+      - SEARCH_PROVIDERS="brave,exa,firecrawl,jina,searxng"
+      - BROWSERLESS_BLOCK_ADS=1
+      - BROWSERLESS_STEALTH_MODE=1
+  # LobeHub Agent Gateway（单实例，状态在内存中）
+  # https://github.com/lobehub/lobehub-gateway
+  gateway:
+    image: ghcr.nju.edu.cn/lobehub/lobehub-gateway:0.3.2
+    depends_on:
+      - lobe
+    environment:
+      - SERVICE_TOKEN={{ stable_secret "gateway_service_token" | sha256sum | substr 0 32 }}
+      # 只下发公钥，私钥不出 lobe 容器
+      - 'JWKS_PUBLIC_KEY={{ if .U.jwks_key }}{{ $k := (fromJson .U.jwks_key).keys | first }}{{ toJson (dict "keys" (list (pick $k "kty" "alg" "use" "kid" "n" "e"))) }}{{ end }}'
+      - LOBE_API_BASE_URL=http://lobe.cloud.lazycat.app.lobehub.lzcapp:3210
   postgresql:
-    image: registry.lazycat.cloud/hexg/paradedb/paradedb:48d14ddc8eec68e2
+    image: docker.1ms.run/paradedb/paradedb:0.25.9-pg17
     binds:
       - /lzcapp/var/postgresql-v2:/var/lib/postgresql/data
     environment:
@@ -72,7 +118,7 @@ services:
       start_period: 30s
       start_interval: 2s
   redis:
-    image: registry.lazycat.cloud/redis:8.0
+    image: docker.1ms.run/library/redis:8.10.1
     command: redis-server --save 60 1000 --appendonly yes
     binds:
       - /lzcapp/var/redis:/data
@@ -85,7 +131,7 @@ services:
       timeout: 3s
       retries: 5
   rustfs:
-    image: registry.lazycat.cloud/hexg/rustfs/rustfs:9a2eb235285368fe
+    image: docker.1ms.run/rustfs/rustfs:1.0.0-glibc
     user: "0"
     binds:
       - /lzcapp/var/rustfs/data:/data
@@ -103,12 +149,12 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - wget -qO- http://localhost:9000/health >/dev/null 2>&1 || exit 1
+        - curl -f http://localhost:9000/health >/dev/null 2>&1 || exit 1
       interval: 5s
       timeout: 3s
       retries: 30
   rustfs-init:
-    image: registry.lazycat.cloud/hexg/pgsty/mc:dfa46c69be45799f
+    image: docker.1ms.run/pgsty/mc:RELEASE.2026-09-16T00-00-00Z
     depends_on:
       - rustfs
     entrypoint: /bin/sh
