@@ -1,5 +1,5 @@
 package: cloud.lazycat.app.movie-pilot
-version: 2.9.28
+version: 2.10.6
 name: MoviePilot
 description: 媒体库自动化管理
 homepage: https://github.com/hexgu/LazyCat-Packages

@@ -6,11 +6,10 @@ application:
     - /=http://movie-pilot.cloud.lazycat.app.movie-pilot.lzcapp:3000/
 services:
   movie-pilot:
-    image: ghcr.nju.edu.cn/jxxghp/moviepilot:2.9.28
+    image: jxxghp/moviepilot:2.10.6
     binds:
       - /lzcapp/var/config:/config
       - /lzcapp/var/core:/moviepilot/.cache/ms-playwright
-      - /lzcapp/run/mnt/home:/home
     environment:
       PUID: "0"
       PGID: "0"
