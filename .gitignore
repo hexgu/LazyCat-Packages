@@ -26,4 +26,6 @@ Thumbs.db
 .yarn-integrity
 .pnp.*
 
+# LPK 构建产物（content.tar 由 lzc-cli 从 contentdir 在临时目录生成，不应入库）
 *.lpk
+content.tar
