@@ -13,5 +13,5 @@ locales:
 permissions:
   required:
     - net.lan
-  optional:
     - net.internet
+    - net.host
