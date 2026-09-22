@@ -1,0 +1,18 @@
+application:
+  subdomain: neko-master
+  background_task: true
+  routes:
+    - /=http://neko-master.cloud.lazycat.app.neko-master.lzcapp:3000/
+    - /_cm_ws=http://neko-master.cloud.lazycat.app.neko-master.lzcapp:3002/
+  health_check:
+    test_url: http://neko-master.cloud.lazycat.app.neko-master.lzcapp:3000/
+services:
+  neko-master:
+    image: ghcr.nju.edu.cn/foru17/neko-master:1.4
+    environment:
+      TZ: Asia/Shanghai
+      NODE_ENV: production
+      DB_PATH: /app/data/stats.db
+      COOKIE_SECRET: '{{ stable_secret "cookie_secret" | sha256sum | substr 0 64 }}'
+    binds:
+      - /lzcapp/var/data:/app/data
