@@ -1,0 +1,17 @@
+# ==================== 健身动作数据集 ====================
+# 纯静态项目，提供 1,324 个健身动作的交互式浏览器
+package: cloud.lazycat.app.exercises-dataset
+version: 1.0.0
+name: Exercises Dataset
+homepage: https://github.com/hasaneyldrm/exercises-dataset
+author: hasaneyldrm
+license: MIT
+min_os_version: 1.5.0
+locales:
+  zh-CN:
+    name: 健身动作数据集
+    description: 包含 1,324 个健身动作的交互式浏览器 — 附带动画 GIF、缩略图、肌肉群与器材数据，支持 10 种语言的分步指导。
+  en-US:
+    name: Exercises Dataset
+    description: Interactive browser for 1,324 fitness exercises — with animation GIFs, thumbnails, muscle-group & equipment data, and step-by-step instructions in 10 languages.
+permissions: {}

@@ -1,0 +1,101 @@
+application:
+  subdomain: geoflow
+  multi_instance: false
+  depends_on:
+    - init
+    - postgres
+    - redis
+  routes:
+    - /=http://app.cloud.lazycat.app.geoflow.lzcapp:8080
+  # 如果需要开放 websocket(reverb) 的独立端口，取消下面注释
+  # ingress:
+  #   - protocol: tcp
+  #     port: 18081
+  #     service: reverb
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_DB=geo_flow
+      - POSTGRES_USER=geo_user
+      - POSTGRES_PASSWORD=geo_password
+    binds:
+      - /lzcapp/var/postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    binds:
+      - /lzcapp/var/redis:/data
+
+  init:
+    image: geoflow-app:latest
+    command: ["php", "artisan", "about"]
+    environment:
+      - AUTO_GENERATE_APP_KEY=true
+      - AUTO_INIT_ONCE=true
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=geo_flow
+      - DB_USERNAME=geo_user
+      - DB_PASSWORD=geo_password
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=redis
+      - CACHE_DRIVER=redis
+
+  app:
+    image: geoflow-app:latest
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+    depends_on:
+      - init
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=geo_flow
+      - DB_USERNAME=geo_user
+      - DB_PASSWORD=geo_password
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=redis
+      - CACHE_DRIVER=redis
+
+  queue:
+    image: geoflow-app:latest
+    command: ["php", "artisan", "queue:work", "redis", "--queue=geoflow,default", "--sleep=1", "--tries=1", "--timeout=300"]
+    depends_on:
+      - init
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+      - DB_DATABASE=geo_flow
+      - DB_USERNAME=geo_user
+      - DB_PASSWORD=geo_password
+      - QUEUE_CONNECTION=redis
+      - CACHE_DRIVER=redis
+
+  scheduler:
+    image: geoflow-app:latest
+    command: ["php", "artisan", "schedule:work"]
+    depends_on:
+      - init
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+      - DB_DATABASE=geo_flow
+      - DB_USERNAME=geo_user
+      - DB_PASSWORD=geo_password
+      - QUEUE_CONNECTION=redis
+      - CACHE_DRIVER=redis
+
+  reverb:
+    image: geoflow-app:latest
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=18081"]
+    depends_on:
+      - init
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+      - DB_DATABASE=geo_flow
+      - DB_USERNAME=geo_user
+      - DB_PASSWORD=geo_password
+      - QUEUE_CONNECTION=redis
+      - CACHE_DRIVER=redis

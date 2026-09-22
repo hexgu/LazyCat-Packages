@@ -1,0 +1,53 @@
+# ==================== TREK 运行清单 ====================
+# 自托管协作旅行规划器，接入懒猫 OIDC 单点登录
+application:
+  subdomain: trek
+  oidc_redirect_path: /api/auth/oidc/callback
+  public_path:
+    - /    # TREK 内部管理认证流（OIDC 回调需免登访问）
+  routes:
+    - /=http://trek.cloud.lazycat.app.trek.lzcapp:3000/
+  health_check:
+    test_url: http://trek.cloud.lazycat.app.trek.lzcapp:3000/api/health
+
+services:
+  trek:
+    image: docker.1ms.run/mauriceboe/trek:3.4.1
+    binds:
+      - /lzcapp/var/data:/app/data        # SQLite 数据库 + 日志
+      - /lzcapp/var/uploads:/app/uploads  # 用户上传的文档、图片
+    environment:
+      # ==================== 核心配置 ====================
+      - NODE_ENV=production
+      - PORT=3000
+      - TZ=Asia/Shanghai
+      - TRUST_PROXY=1
+      - APP_URL=https://${LAZYCAT_APP_DOMAIN}
+      - DEFAULT_LANGUAGE=zh
+      # ==================== 加密密钥 ====================
+      # stable_secret 确保重启/升级后密钥不变
+      - >-
+        ENCRYPTION_KEY={{ stable_secret "encryption_key" | sha256sum |
+        substr 0 64 }}
+
+      # ==================== OIDC 单点登录 ====================
+      - OIDC_ISSUER=${LAZYCAT_AUTH_OIDC_ISSUER_URI}
+      - OIDC_CLIENT_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
+      - OIDC_DISPLAY_NAME=LazyCat
+      - OIDC_ONLY=true
+      - OIDC_SCOPE=openid email profile
+
+      # ==================== 功能配置 ====================
+      - LOG_LEVEL=info
+      - ALLOW_INTERNAL_NETWORK=true
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://localhost:3000/api/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

@@ -1,0 +1,18 @@
+package: cloud.lazycat.app.trek
+version: 3.4.1
+name: TREK
+homepage: https://github.com/liketrek/TREK
+author: liketrek
+license: AGPL-3.0
+min_os_version: 1.5.0
+locales:
+  zh-CN:
+    name: TREK
+    description: 自托管的实时协作旅行规划器 — 集地图、预算、行李清单、旅行日志与 AI 于一体。
+  en-US:
+    name: TREK
+    description: A self-hosted, real-time collaborative travel planner — with maps, budgets, packing lists, a journal, and AI built in.
+permissions:
+  required:
+    - net.internet      # 地图瓦片、天气API、地点搜索等外部服务
+    - document.private  # 用户上传的旅行文档、图片等

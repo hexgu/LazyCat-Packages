@@ -1,0 +1,9 @@
+package: cloud.lazycat.app.geoflow
+version: 1.0.0
+name: GEOFlow
+description: 专门面向 GEO（生成式引擎优化）的开源智能内容工程系统
+author: yaojingang
+permissions:
+  required:
+    - net.internet
+    - document.private
